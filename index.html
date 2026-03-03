@@ -1,0 +1,1295 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Co-Marketing Portfolio Manager</title>
+  <style>
+    :root {
+      --bg: #f0f5ed;
+      --surface: #ffffff;
+      --ink: #1a1f1a;
+      --muted: #4d5a4d;
+      --accent: #00D632;
+      --accent-dark: #00B82B;
+      --accent-darker: #009922;
+      --accent-2: #ca8a04;
+      --danger: #b91c1c;
+      --danger-light: rgba(185, 28, 28, 0.08);
+      --ok: #00B82B;
+      --warn: #d97706;
+      --warn-light: rgba(217, 119, 6, 0.10);
+      --border: #d4ddd0;
+      --shadow: 0 12px 28px rgba(0, 40, 10, 0.08);
+      --cash-green-light: rgba(0, 214, 50, 0.08);
+      --cash-green-tint: rgba(0, 214, 50, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Trebuchet MS", "Gill Sans", "Avenir Next", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 100% 0%, rgba(0, 214, 50, 0.13), transparent 32%),
+        radial-gradient(circle at 0% 100%, rgba(0, 184, 43, 0.10), transparent 28%),
+        var(--bg);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px 16px 40px;
+    }
+
+    .hero {
+      background: linear-gradient(120deg, #0a0f0a, #0d2b10 30%, #0f4a15 55%, #00D632);
+      color: #e8ffe8;
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: 0 12px 32px rgba(0, 80, 20, 0.18);
+      margin-bottom: 18px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -40%;
+      right: -10%;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(0, 214, 50, 0.25), transparent 70%);
+      pointer-events: none;
+    }
+
+    h1, h2, h3 { margin: 0 0 10px; }
+    h1 { position: relative; }
+    p { margin: 0; color: var(--muted); }
+    .hero p { color: #c2f5c8; margin-top: 6px; position: relative; }
+
+    .grid {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(12, 1fr);
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow: var(--shadow);
+    }
+
+    .span-12 { grid-column: span 12; }
+    .span-8 { grid-column: span 8; }
+    .span-6 { grid-column: span 6; }
+    .span-4 { grid-column: span 4; }
+
+    .kpi {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+    .kpi .tile {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      background: linear-gradient(135deg, #fcfdfb, var(--cash-green-light));
+      border-left: 3px solid var(--accent);
+    }
+    .label {
+      color: var(--muted);
+      font-size: 0.82rem;
+      margin-bottom: 4px;
+    }
+    .value {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    form {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    form .full { grid-column: span 2; }
+
+    input, select, textarea, button {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 9px 10px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      background: #fff;
+      color: var(--ink);
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(0, 214, 50, 0.15);
+    }
+
+    textarea { min-height: 72px; resize: vertical; }
+
+    button {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-weight: 700;
+      transition: background 0.15s, transform 0.1s;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+    }
+    button:hover {
+      background: var(--accent-dark);
+      transform: translateY(-1px);
+    }
+    button:active {
+      transform: translateY(0);
+      background: var(--accent-darker);
+    }
+
+    button.secondary {
+      background: #1f2d1f;
+      color: #fff;
+    }
+    button.secondary:hover {
+      background: #2a3f2a;
+    }
+
+    .table-wrap { overflow-x: auto; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 840px;
+    }
+    th, td {
+      border-bottom: 1px solid var(--border);
+      padding: 8px 6px;
+      text-align: left;
+      font-size: 0.9rem;
+      vertical-align: top;
+    }
+    th {
+      color: var(--muted);
+      font-weight: 700;
+      background: var(--cash-green-light);
+    }
+
+    .tag {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 0.78rem;
+      background: rgba(0, 214, 50, 0.12);
+      color: #006e18;
+      font-weight: 600;
+    }
+    .tag.warn {
+      background: rgba(202, 138, 4, 0.12);
+      color: #92600a;
+    }
+    .tag.danger {
+      background: rgba(185, 28, 28, 0.10);
+      color: #b91c1c;
+    }
+    .risk { color: var(--danger); font-weight: 700; }
+    .ok { color: var(--ok); font-weight: 700; }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    h2, h3 {
+      color: var(--ink);
+    }
+    h2::after {
+      content: '';
+      display: block;
+      width: 40px;
+      height: 3px;
+      background: var(--accent);
+      border-radius: 2px;
+      margin-top: 6px;
+    }
+
+    a { color: var(--accent-dark); }
+    a:hover { color: var(--accent-darker); }
+
+    ul { padding-left: 18px; }
+    li { margin-bottom: 4px; font-size: 0.92rem; }
+
+    /* Pacing Tracker */
+    .pacing-row {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, #fcfdfb, var(--cash-green-light));
+      transition: box-shadow 0.15s;
+    }
+    .pacing-row:hover {
+      box-shadow: 0 4px 16px rgba(0, 40, 10, 0.10);
+    }
+    .pacing-row.warn-bg {
+      background: linear-gradient(135deg, #fffdf5, var(--warn-light));
+      border-left: 3px solid var(--warn);
+    }
+    .pacing-row.danger-bg {
+      background: linear-gradient(135deg, #fff8f8, var(--danger-light));
+      border-left: 3px solid var(--danger);
+    }
+    .pacing-row.ok-bg {
+      border-left: 3px solid var(--accent);
+    }
+    .pacing-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .pacing-header .merchant-name {
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--ink);
+    }
+    .pacing-stats {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .pacing-stat .stat-label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-bottom: 2px;
+    }
+    .pacing-stat .stat-value {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--ink);
+    }
+    .pacing-bar-container {
+      position: relative;
+      height: 22px;
+      background: #e8ede6;
+      border-radius: 11px;
+      overflow: hidden;
+    }
+    .pacing-bar-budget {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      border-radius: 11px;
+      transition: width 0.4s ease;
+    }
+    .pacing-bar-budget.green { background: linear-gradient(90deg, #00D632, #00B82B); }
+    .pacing-bar-budget.amber { background: linear-gradient(90deg, #f59e0b, #d97706); }
+    .pacing-bar-budget.red { background: linear-gradient(90deg, #ef4444, #b91c1c); }
+    .pacing-bar-time {
+      position: absolute;
+      top: 0;
+      height: 100%;
+      width: 3px;
+      background: var(--ink);
+      border-radius: 2px;
+      z-index: 2;
+      opacity: 0.7;
+    }
+    .pacing-bar-time::after {
+      content: attr(data-label);
+      position: absolute;
+      top: -18px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.68rem;
+      color: var(--muted);
+      white-space: nowrap;
+      font-weight: 600;
+    }
+    .pacing-legend {
+      display: flex;
+      gap: 16px;
+      margin-top: 6px;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+    .pacing-legend span {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .legend-dot.green-dot { background: var(--accent); }
+    .legend-dot.dark-dot { background: var(--ink); opacity: 0.7; }
+    .pacing-empty {
+      text-align: center;
+      padding: 32px 16px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    /* Terms & Unlock Thresholds */
+    .terms-col-header {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--ink);
+      padding-bottom: 8px;
+      margin-bottom: 10px;
+      border-bottom: 2px solid var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .terms-col-header .badge {
+      font-size: 0.72rem;
+      background: var(--cash-green-tint);
+      color: #006e18;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-weight: 600;
+    }
+    .terms-merchant-card {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, #fcfdfb, rgba(0, 214, 50, 0.04));
+    }
+    .terms-merchant-card:last-child { margin-bottom: 0; }
+    .terms-merchant-name {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+    .terms-detail {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 4px;
+      line-height: 1.45;
+    }
+    .terms-detail strong {
+      color: var(--ink);
+      font-weight: 600;
+    }
+    .terms-unlock-box {
+      margin-top: 8px;
+      padding: 8px 10px;
+      background: rgba(0, 214, 50, 0.06);
+      border: 1px dashed rgba(0, 214, 50, 0.3);
+      border-radius: 8px;
+      font-size: 0.84rem;
+      color: var(--ink);
+    }
+    .terms-unlock-box .unlock-label {
+      font-weight: 700;
+      color: var(--accent-darker);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 3px;
+    }
+    .terms-progress {
+      margin-top: 6px;
+    }
+    .terms-progress-bar {
+      height: 6px;
+      background: #e8ede6;
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+    .terms-progress-fill {
+      height: 100%;
+      border-radius: 3px;
+      background: linear-gradient(90deg, #00D632, #00B82B);
+      transition: width 0.3s ease;
+    }
+    .terms-progress-text {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+    .terms-empty {
+      text-align: center;
+      padding: 24px 12px;
+      color: var(--muted);
+      font-size: 0.88rem;
+      font-style: italic;
+    }
+
+    /* Edit / Delete buttons in table */
+    .btn-sm {
+      display: inline-block;
+      padding: 4px 10px;
+      font-size: 0.78rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      border: none;
+      width: auto;
+      margin-right: 4px;
+      text-shadow: none;
+    }
+    .btn-edit {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-edit:hover { background: var(--accent-dark); }
+    .btn-delete {
+      background: var(--danger);
+      color: #fff;
+    }
+    .btn-delete:hover { background: #991b1b; }
+
+    /* Modal overlay */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+    .modal {
+      background: var(--surface);
+      border-radius: 16px;
+      padding: 24px;
+      width: 100%;
+      max-width: 620px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    }
+    .modal h3 {
+      margin: 0 0 16px;
+      color: var(--ink);
+    }
+    .modal form {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .modal form .full { grid-column: span 2; }
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+      grid-column: span 2;
+    }
+    .modal-actions button {
+      flex: 1;
+    }
+    .btn-cancel {
+      background: #6b7280;
+      color: #fff;
+    }
+    .btn-cancel:hover { background: #4b5563; }
+
+    @media (max-width: 900px) {
+      .span-8, .span-6, .span-4 { grid-column: span 12; }
+      .kpi { grid-template-columns: repeat(2, 1fr); }
+      form { grid-template-columns: 1fr; }
+      form .full { grid-column: span 1; }
+      .two-col { grid-template-columns: 1fr; }
+      .pacing-stats { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    @media (max-width: 600px) {
+      .pacing-stats { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+  
+  
+  <script type="application/ld+json">
+{
+  "@context": "urn:goose.ai:schema",
+  "@type": "GooseApp",
+  "name": "co-marketing-dashboard",
+  "description": "Enterprise co-marketing dashboard for commitments, campaigns, pacing, and unlock thresholds.",
+  "width": 1200,
+  "height": 900,
+  "resizable": true,
+  "mcpServers": [
+    "apps"
+  ]
+}
+  </script>
+  <script type="application/x-goose-prd">
+## Co-Marketing Portfolio Manager Dashboard — PRD
+
+### Overview
+A single-file enterprise dashboard for managing co-marketing commitments, campaign tracking, unlock thresholds, pacing analysis, and terms visibility. Branded with Cash App's signature green (#00D632) color identity.
+
+### Visual Identity — Cash Green Theme
+1. **Hero banner**: Dark-to-Cash-Green gradient (dark greens/blacks transitioning to #00D632) with radial glow accent
+2. **Primary accent color (--accent)**: Cash App green #00D632 throughout
+3. **Buttons**: Cash Green primary with darker hover/active states; secondary buttons use dark green-black
+4. **Tags and OK indicators**: Cash Green tints and shades; warning tags in amber; danger tags in red
+5. **Background**: Subtle radial gradients using Cash Green tones
+6. **KPI tiles**: Left green accent border with light Cash Green gradient background
+7. **Table headers**: Light Cash Green tint background
+8. **Form focus states**: Cash Green border with green glow ring
+9. **Section headings**: Green underline accent bar via ::after pseudo-element
+10. **Links**: Dark Cash Green color
+11. **Overall aesthetic**: Clean, professional, modern with strong Cash Green identity
+
+### Core Features
+1. **Hero Section**: Title and description with Cash Green gradient branding
+2. **Portfolio Overview KPI Tiles** (8 tiles): Total Funds Managed, Total Spent, Remaining Balance, Average Utilization, Funds Expiring This Quarter, Live Campaigns, Blended ROI, Merchants Tracked
+3. **Add Merchant Commitment Form**: Name, parent account, product, funding type, commitment, spent, dates, terms, unlock thresholds
+4. **Add Campaign Form**: Merchant, campaign name, type, status, dates, budget, impressions, clicks, transactions, new users, GMV, slack link
+5. **Merchant Tracker Table**: Calculated metrics — remaining, utilization, burn rate, projected end spend, flags (expiring funds, under pacing, threshold tracking) with color-coded flag tags; Edit and Delete actions per row
+6. **Campaign Tracker Table**: Calculated metrics — CTR, CVR, CAC, ROI with color-coded status
+7. **Pacing Tracker**: Full-width section showing each merchant with:
+   - Visual progress bar comparing budget utilization vs time elapsed
+   - Time elapsed marker (dark vertical line) on the progress bar
+   - Stats grid: Commitment, Spent, Remaining, Time Elapsed %, Budget Utilized %, Days Remaining
+   - Color-coded pacing status: Ahead (green, ≥90%), On Track (green, ≥70%), Slightly Behind (amber, ≥50%), Behind (red, <50%)
+   - Row background tinting based on pacing status (green/amber/red)
+   - Legend showing bar and marker meanings
+   - Empty state when no merchants exist
+8. **Terms & Unlock Thresholds**: Full-width section with two side-by-side columns:
+   - **Cash App Pay** column: Merchants with "Cash App Pay" product
+   - **Afterpay** column: Merchants with "Afterpay" product
+   - Each merchant card shows: name, funding type, terms, unlock thresholds with progress bar
+   - Column headers with merchant count badges
+   - Empty state placeholders when no merchants in a category
+   - Progress bars showing spend toward commitment for unlock tracking
+9. **Reporting Views**: List of available report types with Download Data JSON button (full-width card)
+10. **Edit Merchant Modal**: Modal overlay for editing merchant details with all fields pre-populated
+
+### Pre-loaded Data
+- 5 default merchants: DoorDash, Fubo, Roku, PlayStation (parent: Sony), StockX
+- DoorDash, Fubo, Roku, PlayStation are Cash App Pay; StockX is Afterpay
+- All default merchants have $0 commitment/$0 spent with 2025-01-01 to 2025-12-31 dates
+
+### Data & Logic
+- All data stored in-memory arrays (merchants, campaigns)
+- Dynamic rendering on every add/edit/delete action (all sections update)
+- Merchant metrics: remaining balance, utilization %, monthly burn rate, projected end spend, pacing ratio, time elapsed %, days remaining
+- Pacing calculation: (budget utilized %) / (time elapsed %) × 100
+- Campaign metrics: CTR, CVR, CAC, ROI
+- Merchant flags: Funds expiring <60 days (danger tag), under pacing <70% (warn tag), threshold tracking needed
+- HTML escaping via escapeHtml() for user-provided content
+
+### Layout & Responsiveness
+- 12-column CSS grid layout
+- Responsive breakpoint at 900px (collapses to single column)
+- KPI grid: 4 columns desktop, 2 columns mobile
+- Forms: 2 columns desktop, 1 column mobile
+- Pacing stats grid: 6 columns desktop, 3 columns tablet, 2 columns mobile
+- Terms section: 2 columns desktop, 1 column mobile
+- Scrollable table wrappers for overflow
+
+### Technical
+- Single HTML file, no external JS dependencies
+- Vanilla JavaScript with inline script
+- CSS custom properties for theming
+- crypto.randomUUID() for record IDs
+- JSON export via Blob/URL.createObjectURL
+  </script>
+</head>
+<body>
+  <div class="container">
+    <section class="hero">
+      <h1>Co-Marketing Portfolio Manager</h1>
+      <p>Single-file dashboard for enterprise co-marketing commitments, campaign tracking, unlock thresholds, pacing, and risk alerts.</p>
+    </section>
+
+    <section class="card span-12">
+      <h2>Portfolio Overview</h2>
+      <div class="kpi" id="kpiTiles"></div>
+    </section>
+
+    <section class="grid">
+      <article class="card span-6">
+        <h3>Add Merchant Commitment</h3>
+        <form id="merchantForm">
+          <input id="mName" placeholder="Merchant Name" required />
+          <select id="mProduct" required>
+            <option value="">Product</option>
+            <option>Cash App Pay</option>
+            <option>Afterpay</option>
+          </select>
+          <select id="mFunding" required>
+            <option value="">Funding Type</option>
+            <option>fixed</option>
+            <option>performance-based</option>
+            <option>tiered unlock</option>
+            <option>match-based</option>
+            <option>other</option>
+          </select>
+          <input id="mCommitment" type="number" min="0" step="0.01" placeholder="Total Commitment" required />
+          <input id="mUnlocked" type="number" min="0" step="0.01" placeholder="Funds Unlocked / Paid Out" />
+          <input id="mSpent" type="number" min="0" step="0.01" placeholder="Actual Spend" />
+          <input id="mStart" type="date" required />
+          <input id="mEnd" type="date" required />
+          <textarea class="full" id="mTerms" placeholder="Terms & Conditions"></textarea>
+          <textarea class="full" id="mUnlock" placeholder="Unlock thresholds (e.g., Spend $50k unlock $10k tranche)"></textarea>
+          <button type="submit" class="full">Add Merchant</button>
+        </form>
+      </article>
+
+      <article class="card span-6">
+        <h3>Add Campaign</h3>
+        <form id="campaignForm">
+          <input id="cMerchant" placeholder="Merchant Name (must match merchant list)" required />
+          <input id="cName" placeholder="Campaign Name" required />
+          <select id="cType" required>
+            <option value="">Campaign Type</option>
+            <option>Email</option>
+            <option>Onsite</option>
+            <option>Paid Media</option>
+            <option>App Push</option>
+            <option>Social</option>
+            <option>Other</option>
+          </select>
+          <select id="cStatus" required>
+            <option>Proposed</option>
+            <option>Approved</option>
+            <option>Live</option>
+            <option>Complete</option>
+          </select>
+          <input id="cStart" type="date" required />
+          <input id="cEnd" type="date" placeholder="End Date (optional)" />
+          <input id="cAllocated" type="number" min="0" step="0.01" placeholder="Budget Allocated" required />
+          <input id="cSpent" type="number" min="0" step="0.01" placeholder="Budget Spent (optional)" />
+          <input id="cImpr" type="number" min="0" step="1" placeholder="Impressions (optional)" />
+          <input id="cClicks" type="number" min="0" step="1" placeholder="Clicks (optional)" />
+          <input id="cTxn" type="number" min="0" step="1" placeholder="Transactions (optional)" />
+          <input id="cUsers" type="number" min="0" step="1" placeholder="New Users (optional)" />
+          <input id="cGmv" type="number" min="0" step="0.01" placeholder="GMV (optional)" />
+          <input id="cSlack" placeholder="Slack thread link (optional)" />
+          <button type="submit" class="full">Add Campaign</button>
+        </form>
+      </article>
+
+      <article class="card span-12">
+        <h3>Merchant Tracker</h3>
+        <div class="table-wrap">
+          <table id="merchantTable">
+            <thead>
+              <tr>
+                <th>Merchant</th>
+                <th>Product</th>
+                <th>Commitment</th>
+                <th>Unlocked/Paid</th>
+                <th>Actual Spend</th>
+                <th>Unspent Funds</th>
+                <th>Remaining to Unlock</th>
+                <th>Utilization</th>
+                <th>Flags</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="card span-12">
+        <h3>Campaign Tracker</h3>
+        <div class="table-wrap">
+          <table id="campaignTable">
+            <thead>
+              <tr>
+                <th>Campaign</th>
+                <th>Merchant</th>
+                <th>Status</th>
+                <th>Allocated</th>
+                <th>Spent</th>
+                <th>CTR</th>
+                <th>CVR</th>
+                <th>CAC</th>
+                <th>ROI</th>
+                <th>Slack</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="card span-12" id="pacingSection">
+        <h2>Pacing Tracker</h2>
+        <div id="pacingContent"></div>
+      </article>
+
+      <article class="card span-12" id="termsSection">
+        <h2>Terms &amp; Unlock Thresholds</h2>
+        <div class="two-col" id="termsContent"></div>
+      </article>
+
+      <article class="card span-12">
+        <h3>Reporting Views</h3>
+        <p>Use current tables to generate:</p>
+        <ul>
+          <li>Executive Summary</li>
+          <li>Merchant Deep Dive</li>
+          <li>Expiring Funds Report</li>
+          <li>Unlock Threshold Tracker</li>
+          <li>Underutilized Budget Alert Report</li>
+          <li>Quarterly Recap</li>
+        </ul>
+        <button class="secondary" id="downloadJson">Download Data JSON</button>
+      </article>
+    </section>
+  </div>
+
+  <!-- Edit Merchant Modal -->
+  <div class="modal-overlay" id="editModal">
+    <div class="modal">
+      <h3 id="editModalTitle">Edit Merchant</h3>
+      <form id="editForm">
+        <input type="hidden" id="editId" />
+        <input id="editName" placeholder="Merchant Name" required />
+        <select id="editProduct" required>
+          <option value="">Product</option>
+          <option>Cash App Pay</option>
+          <option>Afterpay</option>
+        </select>
+        <select id="editFunding" required>
+          <option value="">Funding Type</option>
+          <option>fixed</option>
+          <option>performance-based</option>
+          <option>tiered unlock</option>
+          <option>match-based</option>
+          <option>other</option>
+        </select>
+        <input id="editCommitment" type="number" min="0" step="0.01" placeholder="Total Commitment" required />
+        <input id="editUnlocked" type="number" min="0" step="0.01" placeholder="Funds Unlocked / Paid Out" />
+        <input id="editSpent" type="number" min="0" step="0.01" placeholder="Actual Spend" />
+        <input id="editStart" type="date" required />
+        <input id="editEnd" type="date" required />
+        <textarea class="full" id="editTerms" placeholder="Terms & Conditions"></textarea>
+        <textarea class="full" id="editUnlock" placeholder="Unlock thresholds (e.g., Spend $50k unlock $10k tranche)"></textarea>
+        <div class="modal-actions">
+          <button type="submit">Save Changes</button>
+          <button type="button" class="btn-cancel" id="editCancel">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Campaign Modal -->
+  <div class="modal-overlay" id="editCampaignModal">
+    <div class="modal">
+      <h3>Edit Campaign</h3>
+      <form id="editCampaignForm">
+        <input type="hidden" id="ecId" />
+        <input id="ecMerchant" placeholder="Merchant Name" required />
+        <input id="ecName" placeholder="Campaign Name" required />
+        <select id="ecType" required>
+          <option value="">Campaign Type</option>
+          <option>Email</option>
+          <option>Onsite</option>
+          <option>Paid Media</option>
+          <option>App Push</option>
+          <option>Social</option>
+          <option>Other</option>
+        </select>
+        <select id="ecStatus" required>
+          <option>Proposed</option>
+          <option>Approved</option>
+          <option>Live</option>
+          <option>Complete</option>
+        </select>
+        <input id="ecStart" type="date" required />
+        <input id="ecEnd" type="date" />
+        <input id="ecAllocated" type="number" min="0" step="0.01" placeholder="Budget Allocated" required />
+        <input id="ecSpent" type="number" min="0" step="0.01" placeholder="Budget Spent" />
+        <input id="ecImpr" type="number" min="0" step="1" placeholder="Impressions" />
+        <input id="ecClicks" type="number" min="0" step="1" placeholder="Clicks" />
+        <input id="ecTxn" type="number" min="0" step="1" placeholder="Transactions" />
+        <input id="ecUsers" type="number" min="0" step="1" placeholder="New Users" />
+        <input id="ecGmv" type="number" min="0" step="0.01" placeholder="GMV" />
+        <input id="ecSlack" placeholder="Slack thread link" />
+        <div class="modal-actions">
+          <button type="submit">Save Changes</button>
+          <button type="button" class="btn-cancel" id="editCampaignCancel">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const merchants = [
+      { id: crypto.randomUUID(), name: 'DoorDash', product: 'Afterpay', fundingType: 'tiered unlock', commitment: 5000000, unlocked: 0, spent: 0, start: '2025-01-01', end: '2028-01-01', terms: 'Total Value: $5M ($2M Marketing, $3M Integration). Term: 3 years from first purchase. Expiration: 3 years post first transaction. Forfeiture: Yes (unused funds).', unlock: 'Unlock Trigger: 100% launch. $2M Marketing + $3M Integration unlocked upon full launch.' },
+      { id: crypto.randomUUID(), name: 'DoorDash', product: 'Cash App Pay', fundingType: 'performance-based', commitment: 20000000, unlocked: 0, spent: 0, start: '2026-02-03', end: '2029-02-03', terms: 'Total Potential Value: $20M shared JMF pool ($5M Signature Bonus + $15M GPV-based unlocks). Term: 3 years from February 3, 2026. Expiration: February 3, 2029. Forfeiture: Yes (unused funds).', unlock: 'Unlock Trigger: Rolling 12-month GPV thresholds. $5M Signature Bonus + $15M unlocked via GPV milestones.' },
+      { id: crypto.randomUUID(), name: 'Fubo', product: 'Cash App Pay', fundingType: 'fixed', commitment: 40000, unlocked: 0, spent: 0, start: '2025-01-01', end: '2025-12-31', terms: '$40K co-marketing commitment.', unlock: '' },
+      { id: crypto.randomUUID(), name: 'Roku', product: 'Cash App Pay', fundingType: 'fixed', commitment: 1250000, unlocked: 1250000, spent: 0, start: '2024-06-06', end: '2028-06-06', terms: '$1.25M co-marketing commitment. Paid upfront. Term: June 6, 2024 \u2013 June 6, 2028.', unlock: '' },
+      { id: crypto.randomUUID(), name: 'PlayStation', product: 'Cash App Pay', fundingType: 'fixed', commitment: 3750000, unlocked: 0, spent: 0, start: '2024-11-21', end: '2027-11-21', terms: '$3,750,000 over 3 years. Cash App Pay. Expiration: November 21, 2027.', unlock: '' },
+      { id: crypto.randomUUID(), name: 'StockX', product: 'Cash App Pay', fundingType: 'performance-based', commitment: 750000, unlocked: 250000, spent: 0, start: '2025-01-01', end: '2028-01-01', terms: 'Up to $750,000 in total incentives over 3 years, based on GPV milestones (Cash App Pay volume only, not Cash Card). Up to $1M over 3 years.', unlock: 'Integration Fund: $250,000 upon launch of website at 100% traffic \u2714\uFE0F (PAID). GPV Unlocks: $250,000 for every cumulative $50M in GPV processed via Cash App Pay.' },
+      { id: crypto.randomUUID(), name: 'StockX', product: 'Afterpay', fundingType: 'performance-based', commitment: 1000000, unlocked: 0, spent: 0, start: '2025-01-01', end: '2028-01-01', terms: 'Joint Marketing Fund (JMF) \u2013 separate from Integration Fund. Performance-based, tied to cumulative GPV via Afterpay on website. Usage: Co-marketing launch/availability of Afterpay on StockX and supporting ongoing partnership success. Redemption: Invoice referencing tier milestone, Afterpay pays via direct bank transfer within 30 days.', unlock: 'Tier 1: $75M GPV \u2192 $250,000. Tier 2: $150M GPV \u2192 $250,000. Tier 3: $225M GPV \u2192 $250,000. Tier 4: $300M GPV \u2192 $250,000.' }
+    ];
+    const campaigns = [];
+
+    const fmtMoney = n => '$' + (Number(n) || 0).toLocaleString(undefined, { maximumFractionDigits: 0 });
+    const pct = n => (Number(n) || 0).toFixed(1) + '%';
+
+    const monthDiff = (start, end) => {
+      const s = new Date(start), e = new Date(end);
+      if (isNaN(s) || isNaN(e) || e <= s) return 1;
+      return Math.max(1, (e.getFullYear() - s.getFullYear()) * 12 + (e.getMonth() - s.getMonth()) + 1);
+    };
+
+    const daysDiff = (start, end) => {
+      const s = new Date(start), e = new Date(end);
+      if (isNaN(s) || isNaN(e)) return 0;
+      return Math.ceil((e - s) / (1000 * 60 * 60 * 24));
+    };
+
+    const daysUntil = d => Math.ceil((new Date(d) - new Date()) / (1000 * 60 * 60 * 24));
+
+    document.getElementById("merchantForm").addEventListener("submit", e => {
+      e.preventDefault();
+      const m = {
+        id: crypto.randomUUID(),
+        name: document.getElementById("mName").value.trim(),
+        product: document.getElementById("mProduct").value,
+        fundingType: document.getElementById("mFunding").value,
+        commitment: Number(document.getElementById("mCommitment").value),
+        unlocked: Number(document.getElementById("mUnlocked").value) || 0,
+        spent: Number(document.getElementById("mSpent").value) || 0,
+        start: document.getElementById("mStart").value,
+        end: document.getElementById("mEnd").value,
+        terms: document.getElementById("mTerms").value.trim(),
+        unlock: document.getElementById("mUnlock").value.trim()
+      };
+      merchants.push(m);
+      e.target.reset();
+      render();
+    });
+
+    document.getElementById("campaignForm").addEventListener("submit", e => {
+      e.preventDefault();
+      const c = {
+        id: crypto.randomUUID(),
+        merchant: document.getElementById("cMerchant").value.trim(),
+        name: document.getElementById("cName").value.trim(),
+        type: document.getElementById("cType").value,
+        status: document.getElementById("cStatus").value,
+        start: document.getElementById("cStart").value,
+        end: document.getElementById("cEnd").value,
+        allocated: Number(document.getElementById("cAllocated").value),
+        spent: Number(document.getElementById("cSpent").value),
+        impressions: Number(document.getElementById("cImpr").value) || 0,
+        clicks: Number(document.getElementById("cClicks").value) || 0,
+        transactions: Number(document.getElementById("cTxn").value) || 0,
+        users: Number(document.getElementById("cUsers").value) || 0,
+        gmv: Number(document.getElementById("cGmv").value) || 0,
+        slack: document.getElementById("cSlack").value.trim()
+      };
+      campaigns.push(c);
+      e.target.reset();
+      render();
+    });
+
+    document.getElementById("downloadJson").addEventListener("click", () => {
+      const data = {
+        generatedAt: new Date().toISOString(),
+        merchants,
+        campaigns
+      };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "co_marketing_portfolio.json";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+
+    function merchantMetrics(m) {
+      const unlocked = m.unlocked || 0;
+      const spent = m.spent || 0;
+      const elapsedMonths = monthDiff(m.start, new Date());
+      const totalMonths = monthDiff(m.start, m.end);
+      const unspentFunds = unlocked - spent; // unlocked but not yet spent
+      const remainingToUnlock = m.commitment - unlocked; // not yet unlocked
+      const util = m.commitment ? (spent / m.commitment) * 100 : 0;
+      const unlockedPct = m.commitment ? (unlocked / m.commitment) * 100 : 0;
+      const burn = spent / elapsedMonths;
+      const projected = burn * totalMonths;
+      const toEnd = daysUntil(m.end);
+
+      const totalDays = daysDiff(m.start, m.end);
+      const elapsedDays = daysDiff(m.start, new Date());
+      const timeElapsedPct = totalDays > 0 ? Math.min(100, Math.max(0, (elapsedDays / totalDays) * 100)) : 100;
+      const pacingRatio = timeElapsedPct > 0 ? (util / timeElapsedPct) * 100 : (util > 0 ? 200 : 100);
+
+      return { unlocked, unspentFunds, remainingToUnlock, util, unlockedPct, burn, projected, toEnd, pacingRatio, timeElapsedPct, totalDays, elapsedDays };
+    }
+
+    function campaignMetrics(c) {
+      const ctr = c.impressions ? (c.clicks / c.impressions) * 100 : 0;
+      const cvr = c.clicks ? (c.transactions / c.clicks) * 100 : 0;
+      const cac = c.users ? (c.spent / c.users) : 0;
+      const roi = c.spent ? ((c.gmv - c.spent) / c.spent) * 100 : 0;
+      return { ctr, cvr, cac, roi };
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function getPacingStatus(pacingRatio) {
+      if (pacingRatio >= 90) return { label: 'Ahead', color: 'green', tagClass: '' };
+      if (pacingRatio >= 70) return { label: 'On Track', color: 'green', tagClass: '' };
+      if (pacingRatio >= 50) return { label: 'Slightly Behind', color: 'amber', tagClass: 'warn' };
+      return { label: 'Behind', color: 'red', tagClass: 'danger' };
+    }
+
+    function renderPacing() {
+      const container = document.getElementById('pacingContent');
+      if (merchants.length === 0) {
+        container.innerHTML = '<div class="pacing-empty">No merchants added yet. Add a merchant commitment to see pacing data.</div>';
+        return;
+      }
+
+      let html = '';
+      html += '<div style="display:flex;gap:16px;margin-bottom:14px;flex-wrap:wrap;">';
+      html += '<div class="pacing-legend"><span><span class="legend-dot green-dot"></span> Budget Utilized</span><span><span class="legend-dot dark-dot"></span> Time Elapsed</span></div>';
+      html += '</div>';
+
+      merchants.forEach(function(m) {
+        var mm = merchantMetrics(m);
+        var status = getPacingStatus(mm.pacingRatio);
+        var bgClass = status.color === 'green' ? 'ok-bg' : (status.color === 'amber' ? 'warn-bg' : 'danger-bg');
+        var daysLeft = Math.max(0, mm.toEnd);
+        var utilClamped = Math.min(100, Math.max(0, mm.util));
+        var timeClamped = Math.min(100, Math.max(0, mm.timeElapsedPct));
+
+        html += '<div class="pacing-row ' + bgClass + '">';
+        html += '<div class="pacing-header">';
+        html += '<span class="merchant-name">' + escapeHtml(m.name) + '</span>';
+        html += '<span class="tag ' + status.tagClass + '">' + escapeHtml(status.label) + '</span>';
+        html += '</div>';
+
+        html += '<div class="pacing-stats">';
+        html += '<div class="pacing-stat"><div class="stat-label">Commitment</div><div class="stat-value">' + fmtMoney(m.commitment) + '</div></div>';
+        html += '<div class="pacing-stat"><div class="stat-label">Unlocked/Paid</div><div class="stat-value">' + fmtMoney(mm.unlocked) + '</div></div>';
+        html += '<div class="pacing-stat"><div class="stat-label">Actual Spend</div><div class="stat-value">' + fmtMoney(m.spent) + '</div></div>';
+        html += '<div class="pacing-stat"><div class="stat-label">Unspent Funds</div><div class="stat-value">' + fmtMoney(Math.max(0, mm.unspentFunds)) + '</div></div>';
+        html += '<div class="pacing-stat"><div class="stat-label">Remaining to Unlock</div><div class="stat-value">' + fmtMoney(Math.max(0, mm.remainingToUnlock)) + '</div></div>';
+        html += '<div class="pacing-stat"><div class="stat-label">Days Remaining</div><div class="stat-value">' + daysLeft + '</div></div>';
+        html += '</div>';
+
+        html += '<div class="pacing-bar-container">';
+        html += '<div class="pacing-bar-budget ' + status.color + '" style="width:' + utilClamped + '%"></div>';
+        if (timeClamped > 0 && timeClamped <= 100) {
+          html += '<div class="pacing-bar-time" style="left:' + timeClamped + '%" data-label="' + pct(mm.timeElapsedPct) + ' time"></div>';
+        }
+        html += '</div>';
+
+        html += '</div>';
+      });
+
+      container.innerHTML = html;
+    }
+
+    function renderTerms() {
+      var container = document.getElementById('termsContent');
+
+      var cashAppMerchants = merchants.filter(function(m) {
+        return m.product === 'Cash App Pay';
+      });
+      var afterpayMerchants = merchants.filter(function(m) {
+        return m.product === 'Afterpay';
+      });
+
+      function renderMerchantTermCard(m) {
+        var mm = merchantMetrics(m);
+        var unlockedPct = Math.min(100, Math.max(0, mm.unlockedPct));
+        var spentPct = Math.min(100, Math.max(0, mm.util));
+        var html = '<div class="terms-merchant-card">';
+        html += '<div class="terms-merchant-name">' + escapeHtml(m.name) + '</div>';
+        html += '<div class="terms-detail"><strong>Funding Type:</strong> ' + escapeHtml(m.fundingType) + '</div>';
+        html += '<div class="terms-detail"><strong>Unlocked/Paid:</strong> ' + fmtMoney(mm.unlocked) + ' of ' + fmtMoney(m.commitment) + ' (' + pct(mm.unlockedPct) + ')</div>';
+        html += '<div class="terms-detail"><strong>Actual Spend:</strong> ' + fmtMoney(m.spent) + (mm.unspentFunds > 0 ? ' <span style="color:var(--warn);">(' + fmtMoney(mm.unspentFunds) + ' unlocked but unspent)</span>' : '') + '</div>';
+        if (m.terms) {
+          html += '<div class="terms-detail"><strong>Terms:</strong> ' + escapeHtml(m.terms) + '</div>';
+        } else {
+          html += '<div class="terms-detail"><strong>Terms:</strong> <em style="color:var(--muted);">Not specified</em></div>';
+        }
+        if (m.unlock) {
+          html += '<div class="terms-unlock-box">';
+          html += '<div class="unlock-label">Unlock Thresholds</div>';
+          html += '<div>' + escapeHtml(m.unlock) + '</div>';
+          html += '<div class="terms-progress">';
+          html += '<div class="terms-progress-text">Unlocked: ' + fmtMoney(mm.unlocked) + ' of ' + fmtMoney(m.commitment) + '</div>';
+          html += '<div class="terms-progress-bar"><div class="terms-progress-fill" style="width:' + unlockedPct + '%"></div></div>';
+          html += '<div class="terms-progress-text" style="margin-top:4px;">Spent: ' + fmtMoney(m.spent) + ' of ' + fmtMoney(mm.unlocked) + ' unlocked</div>';
+          html += '<div class="terms-progress-bar"><div class="terms-progress-fill" style="width:' + (mm.unlocked ? Math.min(100, (m.spent / mm.unlocked) * 100) : 0) + '%;background:var(--accent-2);"></div></div>';
+          html += '</div>';
+          html += '</div>';
+        }
+        html += '</div>';
+        return html;
+      }
+
+      var html = '';
+
+      // Cash App Pay column
+      html += '<div>';
+      html += '<div class="terms-col-header">Cash App Pay <span class="badge">' + cashAppMerchants.length + ' merchant' + (cashAppMerchants.length !== 1 ? 's' : '') + '</span></div>';
+      if (cashAppMerchants.length === 0) {
+        html += '<div class="terms-empty">No Cash App Pay merchants added yet.</div>';
+      } else {
+        cashAppMerchants.forEach(function(m) { html += renderMerchantTermCard(m); });
+      }
+      html += '</div>';
+
+      // Afterpay column
+      html += '<div>';
+      html += '<div class="terms-col-header">Afterpay <span class="badge">' + afterpayMerchants.length + ' merchant' + (afterpayMerchants.length !== 1 ? 's' : '') + '</span></div>';
+      if (afterpayMerchants.length === 0) {
+        html += '<div class="terms-empty">No Afterpay merchants added yet.</div>';
+      } else {
+        afterpayMerchants.forEach(function(m) { html += renderMerchantTermCard(m); });
+      }
+      html += '</div>';
+
+      container.innerHTML = html;
+    }
+
+    function render() {
+      var mBody = document.querySelector("#merchantTable tbody");
+      var cBody = document.querySelector("#campaignTable tbody");
+
+      mBody.innerHTML = "";
+      merchants.forEach(function(m) {
+        var mm = merchantMetrics(m);
+        var flags = [];
+        if (mm.toEnd <= 60 && mm.remainingToUnlock > 0) {
+          flags.push("Funds expiring <60d");
+        }
+        if (mm.pacingRatio < 70) {
+          flags.push("Under pacing");
+        }
+        if (m.unlock && /unlock|tranche|tier|threshold/i.test(m.unlock)) {
+          flags.push("Threshold tracking");
+        }
+        if (mm.unspentFunds > 0) {
+          flags.push("Unspent funds");
+        }
+        var tr = document.createElement("tr");
+        tr.innerHTML =
+          '<td><strong>' + escapeHtml(m.name) + '</strong></td>' +
+          '<td>' + escapeHtml(m.product) + '</td>' +
+          '<td>' + fmtMoney(m.commitment) + '</td>' +
+          '<td>' + fmtMoney(mm.unlocked) + '</td>' +
+          '<td>' + fmtMoney(m.spent) + '</td>' +
+          '<td>' + fmtMoney(Math.max(0, mm.unspentFunds)) + '</td>' +
+          '<td>' + fmtMoney(Math.max(0, mm.remainingToUnlock)) + '</td>' +
+          '<td>' + pct(mm.util) + '</td>' +
+          '<td>' + (flags.length ? flags.map(function(f) {
+            var cls = 'tag';
+            if (f.indexOf('expiring') !== -1) cls += ' danger';
+            else if (f.indexOf('pacing') !== -1) cls += ' warn';
+            else if (f.indexOf('Unspent') !== -1) cls += ' warn';
+            return '<span class="' + cls + '">' + escapeHtml(f) + '</span>';
+          }).join(" ") : '<span class="ok">Healthy</span>') + '</td>' +
+          '<td><button class="btn-sm btn-edit" onclick="editMerchant(\'' + m.id + '\')">Edit</button> <button class="btn-sm btn-delete" onclick="deleteMerchant(\'' + m.id + '\')">Delete</button></td>';
+        mBody.appendChild(tr);
+      });
+
+      cBody.innerHTML = "";
+      campaigns.forEach(function(c) {
+        var cm = campaignMetrics(c);
+        var tr = document.createElement("tr");
+        tr.innerHTML =
+          '<td><strong>' + escapeHtml(c.name) + '</strong><br><span class="label">' + escapeHtml(c.type) + '</span></td>' +
+          '<td>' + escapeHtml(c.merchant) + '</td>' +
+          '<td>' + escapeHtml(c.status) + '</td>' +
+          '<td>' + fmtMoney(c.allocated) + '</td>' +
+          '<td>' + fmtMoney(c.spent) + '</td>' +
+          '<td>' + pct(cm.ctr) + '</td>' +
+          '<td>' + pct(cm.cvr) + '</td>' +
+          '<td>' + fmtMoney(cm.cac) + '</td>' +
+          '<td class="' + (cm.roi < 0 ? 'risk' : 'ok') + '">' + pct(cm.roi) + '</td>' +
+          '<td>' + (c.slack ? '<a href="' + escapeHtml(c.slack) + '" target="_blank" rel="noopener">Link</a>' : '<span class="risk">Missing</span>') + '</td>' +
+          '<td><button class="btn-sm btn-edit" onclick="editCampaign(\'' + c.id + '\')">Edit</button> <button class="btn-sm btn-delete" onclick="deleteCampaign(\'' + c.id + '\')">Delete</button></td>';
+        cBody.appendChild(tr);
+      });
+
+      var totalCommitted = merchants.reduce(function(s, m) { return s + m.commitment; }, 0);
+      var totalUnlocked = merchants.reduce(function(s, m) { return s + (m.unlocked || 0); }, 0);
+      var totalSpent = merchants.reduce(function(s, m) { return s + (m.spent || 0); }, 0);
+      var totalUnspent = totalUnlocked - totalSpent;
+      var utilAvg = merchants.length ? merchants.reduce(function(s, m) { return s + merchantMetrics(m).util; }, 0) / merchants.length : 0;
+      var live = campaigns.filter(function(c) { return c.status === "Live"; }).length;
+      var blendedROI = campaigns.reduce(function(acc, c) {
+        var cm = campaignMetrics(c);
+        acc.weighted += cm.roi * c.spent;
+        acc.spend += c.spent;
+        return acc;
+      }, { weighted: 0, spend: 0 });
+      var portfolioROI = blendedROI.spend ? blendedROI.weighted / blendedROI.spend : 0;
+      var expiringQuarter = merchants.filter(function(m) { return daysUntil(m.end) <= 90 && daysUntil(m.end) >= 0; })
+        .reduce(function(s, m) { return s + (m.commitment - (m.unlocked || 0)); }, 0);
+
+      document.getElementById("kpiTiles").innerHTML =
+        '<div class="tile"><div class="label">Total Funds Managed</div><div class="value">' + fmtMoney(totalCommitted) + '</div></div>' +
+        '<div class="tile"><div class="label">Total Unlocked/Paid</div><div class="value">' + fmtMoney(totalUnlocked) + '</div></div>' +
+        '<div class="tile"><div class="label">Total Actual Spend</div><div class="value">' + fmtMoney(totalSpent) + '</div></div>' +
+        '<div class="tile"><div class="label">Unlocked but Unspent</div><div class="value">' + fmtMoney(Math.max(0, totalUnspent)) + '</div></div>' +
+        '<div class="tile"><div class="label">Funds Expiring This Quarter</div><div class="value">' + fmtMoney(expiringQuarter) + '</div></div>' +
+        '<div class="tile"><div class="label">Live Campaigns</div><div class="value">' + live + '</div></div>' +
+        '<div class="tile"><div class="label">Blended ROI</div><div class="value ' + (portfolioROI < 0 ? 'risk' : 'ok') + '">' + pct(portfolioROI) + '</div></div>' +
+        '<div class="tile"><div class="label">Merchants Tracked</div><div class="value">' + merchants.length + '</div></div>';
+
+      renderPacing();
+      renderTerms();
+    }
+
+    // Edit merchant - open modal
+    function editMerchant(id) {
+      var m = merchants.find(function(x) { return x.id === id; });
+      if (!m) return;
+      document.getElementById('editId').value = m.id;
+      document.getElementById('editName').value = m.name;
+      document.getElementById('editProduct').value = m.product;
+      document.getElementById('editFunding').value = m.fundingType;
+      document.getElementById('editCommitment').value = m.commitment;
+      document.getElementById('editUnlocked').value = m.unlocked || 0;
+      document.getElementById('editSpent').value = m.spent || 0;
+      document.getElementById('editStart').value = m.start;
+      document.getElementById('editEnd').value = m.end;
+      document.getElementById('editTerms').value = m.terms;
+      document.getElementById('editUnlock').value = m.unlock;
+      document.getElementById('editModal').classList.add('active');
+    }
+
+    // Delete merchant
+    function deleteMerchant(id) {
+      var m = merchants.find(function(x) { return x.id === id; });
+      if (!m) return;
+      if (!confirm('Delete ' + m.name + '? This cannot be undone.')) return;
+      var idx = merchants.findIndex(function(x) { return x.id === id; });
+      if (idx !== -1) merchants.splice(idx, 1);
+      render();
+    }
+
+    // Edit form submit
+    document.getElementById('editForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      var id = document.getElementById('editId').value;
+      var idx = merchants.findIndex(function(x) { return x.id === id; });
+      if (idx === -1) return;
+      merchants[idx].name = document.getElementById('editName').value.trim();
+      merchants[idx].product = document.getElementById('editProduct').value;
+      merchants[idx].fundingType = document.getElementById('editFunding').value;
+      merchants[idx].commitment = Number(document.getElementById('editCommitment').value);
+      merchants[idx].unlocked = Number(document.getElementById('editUnlocked').value) || 0;
+      merchants[idx].spent = Number(document.getElementById('editSpent').value) || 0;
+      merchants[idx].start = document.getElementById('editStart').value;
+      merchants[idx].end = document.getElementById('editEnd').value;
+      merchants[idx].terms = document.getElementById('editTerms').value.trim();
+      merchants[idx].unlock = document.getElementById('editUnlock').value.trim();
+      document.getElementById('editModal').classList.remove('active');
+      render();
+    });
+
+    // Cancel edit
+    document.getElementById('editCancel').addEventListener('click', function() {
+      document.getElementById('editModal').classList.remove('active');
+    });
+
+    // Close modal on overlay click
+    document.getElementById('editModal').addEventListener('click', function(e) {
+      if (e.target === this) this.classList.remove('active');
+    });
+
+    // Edit campaign - open modal
+    function editCampaign(id) {
+      var c = campaigns.find(function(x) { return x.id === id; });
+      if (!c) return;
+      document.getElementById('ecId').value = c.id;
+      document.getElementById('ecMerchant').value = c.merchant;
+      document.getElementById('ecName').value = c.name;
+      document.getElementById('ecType').value = c.type;
+      document.getElementById('ecStatus').value = c.status;
+      document.getElementById('ecStart').value = c.start;
+      document.getElementById('ecEnd').value = c.end || '';
+      document.getElementById('ecAllocated').value = c.allocated;
+      document.getElementById('ecSpent').value = c.spent || 0;
+      document.getElementById('ecImpr').value = c.impressions || '';
+      document.getElementById('ecClicks').value = c.clicks || '';
+      document.getElementById('ecTxn').value = c.transactions || '';
+      document.getElementById('ecUsers').value = c.users || '';
+      document.getElementById('ecGmv').value = c.gmv || '';
+      document.getElementById('ecSlack').value = c.slack || '';
+      document.getElementById('editCampaignModal').classList.add('active');
+    }
+
+    // Delete campaign
+    function deleteCampaign(id) {
+      var c = campaigns.find(function(x) { return x.id === id; });
+      if (!c) return;
+      if (!confirm('Delete campaign "' + c.name + '"? This cannot be undone.')) return;
+      var idx = campaigns.findIndex(function(x) { return x.id === id; });
+      if (idx !== -1) campaigns.splice(idx, 1);
+      render();
+    }
+
+    // Edit campaign form submit
+    document.getElementById('editCampaignForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      var id = document.getElementById('ecId').value;
+      var idx = campaigns.findIndex(function(x) { return x.id === id; });
+      if (idx === -1) return;
+      campaigns[idx].merchant = document.getElementById('ecMerchant').value.trim();
+      campaigns[idx].name = document.getElementById('ecName').value.trim();
+      campaigns[idx].type = document.getElementById('ecType').value;
+      campaigns[idx].status = document.getElementById('ecStatus').value;
+      campaigns[idx].start = document.getElementById('ecStart').value;
+      campaigns[idx].end = document.getElementById('ecEnd').value;
+      campaigns[idx].allocated = Number(document.getElementById('ecAllocated').value);
+      campaigns[idx].spent = Number(document.getElementById('ecSpent').value) || 0;
+      campaigns[idx].impressions = Number(document.getElementById('ecImpr').value) || 0;
+      campaigns[idx].clicks = Number(document.getElementById('ecClicks').value) || 0;
+      campaigns[idx].transactions = Number(document.getElementById('ecTxn').value) || 0;
+      campaigns[idx].users = Number(document.getElementById('ecUsers').value) || 0;
+      campaigns[idx].gmv = Number(document.getElementById('ecGmv').value) || 0;
+      campaigns[idx].slack = document.getElementById('ecSlack').value.trim();
+      document.getElementById('editCampaignModal').classList.remove('active');
+      render();
+    });
+
+    // Cancel campaign edit
+    document.getElementById('editCampaignCancel').addEventListener('click', function() {
+      document.getElementById('editCampaignModal').classList.remove('active');
+    });
+
+    // Close campaign modal on overlay click
+    document.getElementById('editCampaignModal').addEventListener('click', function(e) {
+      if (e.target === this) this.classList.remove('active');
+    });
+
+    render();
+  </script>
+</body>
+</html>
