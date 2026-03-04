@@ -432,6 +432,76 @@
       font-style: italic;
     }
 
+    /* Campaign Filters */
+    .filter-bar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+      align-items: center;
+    }
+    .filter-bar select, .filter-bar input {
+      padding: 6px 10px;
+      font-size: 0.82rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      min-width: 120px;
+      width: auto;
+    }
+    .filter-bar select:focus, .filter-bar input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(0, 214, 50, 0.15);
+    }
+    .filter-bar label {
+      font-size: 0.78rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .filter-bar .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .filter-bar .btn-clear-filters {
+      padding: 6px 12px;
+      font-size: 0.78rem;
+      border-radius: 8px;
+      background: #374151;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      width: auto;
+      align-self: flex-end;
+    }
+    .filter-bar .btn-clear-filters:hover { background: #4b5563; }
+    th.sortable {
+      cursor: pointer;
+      user-select: none;
+      position: relative;
+    }
+    th.sortable:hover {
+      color: var(--accent-dark);
+    }
+    th.sortable::after {
+      content: ' ⇅';
+      font-size: 0.7rem;
+      opacity: 0.5;
+    }
+    th.sortable.sort-asc::after {
+      content: ' ↑';
+      opacity: 1;
+      color: var(--accent);
+    }
+    th.sortable.sort-desc::after {
+      content: ' ↓';
+      opacity: 1;
+      color: var(--accent);
+    }
+
     /* Edit / Delete buttons in table */
     .btn-sm {
       display: inline-block;
@@ -714,19 +784,45 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
 
       <article class="card span-12">
         <h3>Campaign Tracker</h3>
+        <div class="filter-bar" id="campaignFilters">
+          <div class="filter-group">
+            <label>Search</label>
+            <input type="text" id="cfSearch" placeholder="Campaign or merchant..." />
+          </div>
+          <div class="filter-group">
+            <label>Merchant</label>
+            <select id="cfMerchant"><option value="">All</option></select>
+          </div>
+          <div class="filter-group">
+            <label>Product</label>
+            <select id="cfProduct"><option value="">All</option><option>Cash App Pay</option><option>Afterpay</option></select>
+          </div>
+          <div class="filter-group">
+            <label>Status</label>
+            <select id="cfStatus"><option value="">All</option><option>Proposed</option><option>Approved</option><option>Live</option><option>Complete</option></select>
+          </div>
+          <div class="filter-group">
+            <label>Type</label>
+            <select id="cfType"><option value="">All</option><option>Email</option><option>Onsite</option><option>Paid Media</option><option>App Push</option><option>Social</option><option>Other</option></select>
+          </div>
+          <div class="filter-group">
+            <label>&nbsp;</label>
+            <button class="btn-clear-filters" onclick="clearCampaignFilters()">Clear Filters</button>
+          </div>
+        </div>
         <div class="table-wrap">
           <table id="campaignTable">
             <thead>
               <tr>
-                <th>Campaign</th>
-                <th>Merchant</th>
-                <th>Product</th>
-                <th>Status</th>
-                <th>Planned Spend</th>
-                <th>Actual Spend</th>
-                <th>Variance</th>
-                <th>Start</th>
-                <th>End</th>
+                <th class="sortable" data-sort="name">Campaign</th>
+                <th class="sortable" data-sort="merchant">Merchant</th>
+                <th class="sortable" data-sort="product">Product</th>
+                <th class="sortable" data-sort="status">Status</th>
+                <th class="sortable" data-sort="planned">Planned Spend</th>
+                <th class="sortable" data-sort="actual">Actual Spend</th>
+                <th class="sortable" data-sort="variance">Variance</th>
+                <th class="sortable" data-sort="start">Start</th>
+                <th class="sortable" data-sort="end">End</th>
                 <th>Slack</th>
                 <th>Actions</th>
               </tr>
@@ -879,6 +975,69 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
     // Load from localStorage, or use defaults on first visit
     const merchants = loadData() || JSON.parse(JSON.stringify(DEFAULT_MERCHANTS));
     const campaigns = loadCampaigns();
+
+    // Campaign filter/sort state
+    var campaignSort = { key: null, dir: 'asc' };
+
+    function getFilteredSortedCampaigns() {
+      var search = (document.getElementById('cfSearch').value || '').toLowerCase();
+      var merchant = document.getElementById('cfMerchant').value;
+      var product = document.getElementById('cfProduct').value;
+      var status = document.getElementById('cfStatus').value;
+      var type = document.getElementById('cfType').value;
+
+      var filtered = campaigns.filter(function(c) {
+        if (search && c.name.toLowerCase().indexOf(search) === -1 && c.merchant.toLowerCase().indexOf(search) === -1) return false;
+        if (merchant && c.merchant !== merchant) return false;
+        if (product && c.product !== product) return false;
+        if (status && c.status !== status) return false;
+        if (type && c.type !== type) return false;
+        return true;
+      });
+
+      if (campaignSort.key) {
+        filtered.sort(function(a, b) {
+          var va, vb;
+          switch (campaignSort.key) {
+            case 'name': va = (a.name || '').toLowerCase(); vb = (b.name || '').toLowerCase(); break;
+            case 'merchant': va = (a.merchant || '').toLowerCase(); vb = (b.merchant || '').toLowerCase(); break;
+            case 'product': va = (a.product || '').toLowerCase(); vb = (b.product || '').toLowerCase(); break;
+            case 'status': va = (a.status || ''); vb = (b.status || ''); break;
+            case 'planned': va = a.planned || 0; vb = b.planned || 0; break;
+            case 'actual': va = a.actual || 0; vb = b.actual || 0; break;
+            case 'variance': va = (a.planned || 0) - (a.actual || 0); vb = (b.planned || 0) - (b.actual || 0); break;
+            case 'start': va = a.start || ''; vb = b.start || ''; break;
+            case 'end': va = a.end || ''; vb = b.end || ''; break;
+            default: return 0;
+          }
+          if (va < vb) return campaignSort.dir === 'asc' ? -1 : 1;
+          if (va > vb) return campaignSort.dir === 'asc' ? 1 : -1;
+          return 0;
+        });
+      }
+      return filtered;
+    }
+
+    function clearCampaignFilters() {
+      document.getElementById('cfSearch').value = '';
+      document.getElementById('cfMerchant').value = '';
+      document.getElementById('cfProduct').value = '';
+      document.getElementById('cfStatus').value = '';
+      document.getElementById('cfType').value = '';
+      campaignSort = { key: null, dir: 'asc' };
+      render();
+    }
+
+    function updateMerchantFilterOptions() {
+      var sel = document.getElementById('cfMerchant');
+      var current = sel.value;
+      var names = [];
+      merchants.forEach(function(m) { if (names.indexOf(m.name) === -1) names.push(m.name); });
+      campaigns.forEach(function(c) { if (names.indexOf(c.merchant) === -1) names.push(c.merchant); });
+      names.sort();
+      sel.innerHTML = '<option value="">All</option>';
+      names.forEach(function(n) { sel.innerHTML += '<option' + (n === current ? ' selected' : '') + '>' + escapeHtml(n) + '</option>'; });
+    }
 
     const fmtMoney = n => '$' + (Number(n) || 0).toLocaleString(undefined, { maximumFractionDigits: 0 });
     const pct = n => (Number(n) || 0).toFixed(1) + '%';
@@ -1177,9 +1336,16 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
         mBody.appendChild(tr);
       });
 
-      // Campaign Tracker
+      // Campaign Tracker (filtered + sorted)
+      updateMerchantFilterOptions();
+      var displayCampaigns = getFilteredSortedCampaigns();
       cBody.innerHTML = "";
-      campaigns.forEach(function(c) {
+      if (campaigns.length > 0 && displayCampaigns.length === 0) {
+        var noRow = document.createElement("tr");
+        noRow.innerHTML = '<td colspan="11" style="text-align:center;color:var(--muted);padding:16px;">No campaigns match the current filters.</td>';
+        cBody.appendChild(noRow);
+      }
+      displayCampaigns.forEach(function(c) {
         var cm = campaignMetrics(c);
         var variance = cm.variance;
         var varianceClass = variance < 0 ? 'risk' : (variance > 0 ? 'ok' : '');
@@ -1198,6 +1364,13 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
           '<td>' + (c.slack ? '<a href="' + escapeHtml(c.slack) + '" target="_blank" rel="noopener">Link</a>' : '<span class="risk">Missing</span>') + '</td>' +
           '<td><button class="btn-sm btn-edit" onclick="editCampaign(\'' + c.id + '\')">Edit</button> <button class="btn-sm btn-delete" onclick="deleteCampaign(\'' + c.id + '\')">Delete</button></td>';
         cBody.appendChild(tr);
+      });
+      // Update sort header indicators
+      document.querySelectorAll('#campaignTable th.sortable').forEach(function(th) {
+        th.classList.remove('sort-asc', 'sort-desc');
+        if (th.dataset.sort === campaignSort.key) {
+          th.classList.add(campaignSort.dir === 'asc' ? 'sort-asc' : 'sort-desc');
+        }
       });
 
       // KPI Tiles
@@ -1348,6 +1521,26 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
     });
     document.getElementById('editCampaignModal').addEventListener('click', function(e) {
       if (e.target === this) this.classList.remove('active');
+    });
+
+    // Filter event listeners — re-render on change
+    ['cfSearch', 'cfMerchant', 'cfProduct', 'cfStatus', 'cfType'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.addEventListener(el.tagName === 'INPUT' ? 'input' : 'change', function() { render(); });
+    });
+
+    // Sort event listeners — click column headers to sort
+    document.querySelectorAll('#campaignTable th.sortable').forEach(function(th) {
+      th.addEventListener('click', function() {
+        var key = th.dataset.sort;
+        if (campaignSort.key === key) {
+          campaignSort.dir = campaignSort.dir === 'asc' ? 'desc' : 'asc';
+        } else {
+          campaignSort.key = key;
+          campaignSort.dir = 'asc';
+        }
+        render();
+      });
     });
 
     render();
