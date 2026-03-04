@@ -973,7 +973,7 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
         if (saved) {
           var data = JSON.parse(saved);
           // One-time GPV migration: apply GPV data if not already set
-          if (!localStorage.getItem('comarketing_gpv_migrated_v1')) {
+          if (!localStorage.getItem('comarketing_gpv_migrated_v2')) {
             data.forEach(function(m) {
               var key = m.name + '|' + m.product;
               if (GPV_UPDATE[key]) {
@@ -983,7 +983,7 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
               }
             });
             localStorage.setItem('comarketing_merchants', JSON.stringify(data));
-            localStorage.setItem('comarketing_gpv_migrated_v1', 'true');
+            localStorage.setItem('comarketing_gpv_migrated_v2', 'true');
           }
           return data;
         }
