@@ -992,34 +992,50 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
 
       let html = '';
       html += '<div style="display:flex;gap:16px;margin-bottom:14px;flex-wrap:wrap;">';
-      html += '<div class="pacing-legend"><span><span class="legend-dot green-dot"></span> Budget Utilized</span><span><span class="legend-dot dark-dot"></span> Time Elapsed</span></div>';
+      html += '<div class="pacing-legend"><span><span class="legend-dot green-dot"></span> Total Spend (Planned + Actual)</span><span><span class="legend-dot dark-dot"></span> Time Elapsed</span></div>';
       html += '</div>';
 
       merchants.forEach(function(m) {
         var mm = merchantMetrics(m);
+        var rollup = getCampaignRollup(m.name, m.product);
+        var totalPlanned = (m.planned || 0) + rollup.campaignPlanned;
+        var totalActual = (m.spent || 0) + rollup.campaignActual;
+        var remaining = m.commitment - totalActual;
+        var totalSpendPct = m.commitment ? (totalActual / m.commitment) * 100 : 0;
         var status = getPacingStatus(mm.pacingRatio);
         var bgClass = status.color === 'green' ? 'ok-bg' : (status.color === 'amber' ? 'warn-bg' : 'danger-bg');
         var daysLeft = Math.max(0, mm.toEnd);
-        var utilClamped = Math.min(100, Math.max(0, mm.util));
+        var spendClamped = Math.min(100, Math.max(0, totalSpendPct));
         var timeClamped = Math.min(100, Math.max(0, mm.timeElapsedPct));
+        var productTag = m.product === 'Cash App Pay' ? '<span class="tag" style="background:#e0f7e0;color:#006e18;margin-left:6px;">CAP</span>' : '<span class="tag" style="background:#e8e0f7;color:#5b21b6;margin-left:6px;">Afterpay</span>';
 
         html += '<div class="pacing-row ' + bgClass + '">';
         html += '<div class="pacing-header">';
-        html += '<span class="merchant-name">' + escapeHtml(m.name) + '</span>';
+        html += '<span class="merchant-name">' + escapeHtml(m.name) + productTag + '</span>';
         html += '<span class="tag ' + status.tagClass + '">' + escapeHtml(status.label) + '</span>';
         html += '</div>';
 
-        html += '<div class="pacing-stats">';
+        html += '<div class="pacing-stats" style="grid-template-columns:repeat(4,1fr);">';
         html += '<div class="pacing-stat"><div class="stat-label">Commitment</div><div class="stat-value">' + fmtMoney(m.commitment) + '</div></div>';
         html += '<div class="pacing-stat"><div class="stat-label">Unlocked/Paid</div><div class="stat-value">' + fmtMoney(mm.unlocked) + '</div></div>';
-        html += '<div class="pacing-stat"><div class="stat-label">Actual Spend</div><div class="stat-value">' + fmtMoney(m.spent) + '</div></div>';
-        html += '<div class="pacing-stat"><div class="stat-label">Unspent Funds</div><div class="stat-value">' + fmtMoney(Math.max(0, mm.unspentFunds)) + '</div></div>';
-        html += '<div class="pacing-stat"><div class="stat-label">Remaining to Unlock</div><div class="stat-value">' + fmtMoney(Math.max(0, mm.remainingToUnlock)) + '</div></div>';
-        html += '<div class="pacing-stat"><div class="stat-label">Days Remaining</div><div class="stat-value">' + daysLeft + '</div></div>';
+        html += '<div class="pacing-stat"><div class="stat-label">Planned Spend</div><div class="stat-value">' + fmtMoney(totalPlanned) + '</div></div>';
+        html += '<div class="pacing-stat"><div class="stat-label">Actual Spend</div><div class="stat-value">' + fmtMoney(totalActual) + '</div></div>';
+        html += '<div class="pacing-stat"><div class="stat-label">Remaining</div><div class="stat-value">' + fmtMoney(Math.max(0, remaining)) + '</div></div>';
+        html += '<div class="pacing-stat"><div class="stat-label">Campaigns</div><div class="stat-value">' + rollup.campaignCount + '</div></div>';
+        html += '<div class="pacing-stat"><div class="stat-label">Expires</div><div class="stat-value">' + fmtDate(m.end) + '</div></div>';
+        html += '<div class="pacing-stat"><div class="stat-label">Days Left</div><div class="stat-value">' + daysLeft + '</div></div>';
         html += '</div>';
 
+        // Spend breakdown if campaigns exist
+        if (rollup.campaignCount > 0) {
+          html += '<div style="font-size:0.82rem;color:var(--muted);margin-bottom:6px;">';
+          html += '<strong>Spend Breakdown:</strong> Merchant-level: ' + fmtMoney(m.spent || 0) + ' actual, ' + fmtMoney(m.planned || 0) + ' planned';
+          html += ' · Campaigns (' + rollup.campaignCount + '): ' + fmtMoney(rollup.campaignActual) + ' actual, ' + fmtMoney(rollup.campaignPlanned) + ' planned';
+          html += '</div>';
+        }
+
         html += '<div class="pacing-bar-container">';
-        html += '<div class="pacing-bar-budget ' + status.color + '" style="width:' + utilClamped + '%"></div>';
+        html += '<div class="pacing-bar-budget ' + status.color + '" style="width:' + spendClamped + '%"></div>';
         if (timeClamped > 0 && timeClamped <= 100) {
           html += '<div class="pacing-bar-time" style="left:' + timeClamped + '%" data-label="' + pct(mm.timeElapsedPct) + ' time"></div>';
         }
