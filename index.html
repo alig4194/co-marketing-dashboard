@@ -843,16 +843,42 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
   </div>
 
   <script>
-    const merchants = [
-      { id: crypto.randomUUID(), name: 'DoorDash', product: 'Afterpay', fundingType: 'tiered unlock', commitment: 5000000, unlocked: 0, planned: 0, spent: 0, start: '2025-01-01', end: '2028-01-01', terms: 'Total Value: $5M ($2M Marketing, $3M Integration). Term: 3 years from first purchase. Expiration: 3 years post first transaction. Forfeiture: Yes (unused funds).', unlock: 'Unlock Trigger: 100% launch. $2M Marketing + $3M Integration unlocked upon full launch.' },
-      { id: crypto.randomUUID(), name: 'DoorDash', product: 'Cash App Pay', fundingType: 'performance-based', commitment: 20000000, unlocked: 0, planned: 0, spent: 0, start: '2026-02-03', end: '2029-02-03', terms: 'Total Potential Value: $20M shared JMF pool ($5M Signature Bonus + $15M GPV-based unlocks). Term: 3 years from February 3, 2026. Expiration: February 3, 2029. Forfeiture: Yes (unused funds).', unlock: 'Unlock Trigger: Rolling 12-month GPV thresholds. $5M Signature Bonus + $15M unlocked via GPV milestones.' },
-      { id: crypto.randomUUID(), name: 'Fubo', product: 'Cash App Pay', fundingType: 'fixed', commitment: 40000, unlocked: 0, planned: 0, spent: 0, start: '2025-01-01', end: '2025-12-31', terms: '$40K co-marketing commitment.', unlock: '' },
-      { id: crypto.randomUUID(), name: 'Roku', product: 'Cash App Pay', fundingType: 'fixed', commitment: 1250000, unlocked: 1250000, planned: 0, spent: 0, start: '2024-06-06', end: '2028-06-06', terms: '$1.25M co-marketing commitment. Paid upfront. Term: June 6, 2024 \u2013 June 6, 2028.', unlock: '' },
-      { id: crypto.randomUUID(), name: 'PlayStation', product: 'Cash App Pay', fundingType: 'fixed', commitment: 3750000, unlocked: 0, planned: 0, spent: 0, start: '2024-11-21', end: '2027-11-21', terms: '$3,750,000 over 3 years. Cash App Pay. Expiration: November 21, 2027.', unlock: '' },
-      { id: crypto.randomUUID(), name: 'StockX', product: 'Cash App Pay', fundingType: 'performance-based', commitment: 750000, unlocked: 250000, planned: 0, spent: 0, start: '2025-01-01', end: '2028-01-01', terms: 'Up to $750,000 in total incentives over 3 years, based on GPV milestones (Cash App Pay volume only, not Cash Card). Up to $1M over 3 years.', unlock: 'Integration Fund: $250,000 upon launch of website at 100% traffic \u2714\uFE0F (PAID). GPV Unlocks: $250,000 for every cumulative $50M in GPV processed via Cash App Pay.' },
-      { id: crypto.randomUUID(), name: 'StockX', product: 'Afterpay', fundingType: 'performance-based', commitment: 1000000, unlocked: 0, planned: 0, spent: 0, start: '2025-01-01', end: '2028-01-01', terms: 'Joint Marketing Fund (JMF) \u2013 separate from Integration Fund. Performance-based, tied to cumulative GPV via Afterpay on website. Usage: Co-marketing launch/availability of Afterpay on StockX and supporting ongoing partnership success. Redemption: Invoice referencing tier milestone, Afterpay pays via direct bank transfer within 30 days.', unlock: 'Tier 1: $75M GPV \u2192 $250,000. Tier 2: $150M GPV \u2192 $250,000. Tier 3: $225M GPV \u2192 $250,000. Tier 4: $300M GPV \u2192 $250,000.' }
+    // Default merchant data (used on first load only)
+    const DEFAULT_MERCHANTS = [
+      { id: crypto.randomUUID(), name: 'DoorDash', product: 'Afterpay', fundingType: 'tiered unlock', commitment: 5000000, unlocked: 0, planned: 0, spent: 0, start: '2025-01-01', end: '2028-01-01', contractLink: '', po: '', terms: 'Total Value: $5M ($2M Marketing, $3M Integration). Term: 3 years from first purchase. Expiration: 3 years post first transaction. Forfeiture: Yes (unused funds).', unlock: 'Unlock Trigger: 100% launch. $2M Marketing + $3M Integration unlocked upon full launch.' },
+      { id: crypto.randomUUID(), name: 'DoorDash', product: 'Cash App Pay', fundingType: 'performance-based', commitment: 20000000, unlocked: 0, planned: 0, spent: 0, start: '2026-02-03', end: '2029-02-03', contractLink: '', po: '', terms: 'Total Potential Value: $20M shared JMF pool ($5M Signature Bonus + $15M GPV-based unlocks). Term: 3 years from February 3, 2026. Expiration: February 3, 2029. Forfeiture: Yes (unused funds).', unlock: 'Unlock Trigger: Rolling 12-month GPV thresholds. $5M Signature Bonus + $15M unlocked via GPV milestones.' },
+      { id: crypto.randomUUID(), name: 'Fubo', product: 'Cash App Pay', fundingType: 'fixed', commitment: 40000, unlocked: 0, planned: 0, spent: 0, start: '2025-01-01', end: '2025-12-31', contractLink: '', po: '', terms: '$40K co-marketing commitment.', unlock: '' },
+      { id: crypto.randomUUID(), name: 'Roku', product: 'Cash App Pay', fundingType: 'fixed', commitment: 1250000, unlocked: 1250000, planned: 0, spent: 0, start: '2024-06-06', end: '2028-06-06', contractLink: '', po: '', terms: '$1.25M co-marketing commitment. Paid upfront. Term: June 6, 2024 \u2013 June 6, 2028.', unlock: '' },
+      { id: crypto.randomUUID(), name: 'PlayStation', product: 'Cash App Pay', fundingType: 'fixed', commitment: 3750000, unlocked: 0, planned: 0, spent: 0, start: '2024-11-21', end: '2027-11-21', contractLink: '', po: '', terms: '$3,750,000 over 3 years. Cash App Pay. Expiration: November 21, 2027.', unlock: '' },
+      { id: crypto.randomUUID(), name: 'StockX', product: 'Cash App Pay', fundingType: 'performance-based', commitment: 750000, unlocked: 250000, planned: 0, spent: 0, start: '2025-01-01', end: '2028-01-01', contractLink: '', po: '', terms: 'Up to $750,000 in total incentives over 3 years, based on GPV milestones (Cash App Pay volume only, not Cash Card). Up to $1M over 3 years.', unlock: 'Integration Fund: $250,000 upon launch of website at 100% traffic \u2714\uFE0F (PAID). GPV Unlocks: $250,000 for every cumulative $50M in GPV processed via Cash App Pay.' },
+      { id: crypto.randomUUID(), name: 'StockX', product: 'Afterpay', fundingType: 'performance-based', commitment: 1000000, unlocked: 0, planned: 0, spent: 0, start: '2025-01-01', end: '2028-01-01', contractLink: '', po: '', terms: 'Joint Marketing Fund (JMF) \u2013 separate from Integration Fund. Performance-based, tied to cumulative GPV via Afterpay on website. Usage: Co-marketing launch/availability of Afterpay on StockX and supporting ongoing partnership success. Redemption: Invoice referencing tier milestone, Afterpay pays via direct bank transfer within 30 days.', unlock: 'Tier 1: $75M GPV \u2192 $250,000. Tier 2: $150M GPV \u2192 $250,000. Tier 3: $225M GPV \u2192 $250,000. Tier 4: $300M GPV \u2192 $250,000.' }
     ];
-    const campaigns = [];
+
+    // localStorage persistence
+    function loadData() {
+      try {
+        var saved = localStorage.getItem('comarketing_merchants');
+        if (saved) return JSON.parse(saved);
+      } catch(e) {}
+      return null;
+    }
+    function loadCampaigns() {
+      try {
+        var saved = localStorage.getItem('comarketing_campaigns');
+        if (saved) return JSON.parse(saved);
+      } catch(e) {}
+      return [];
+    }
+    function saveData() {
+      try {
+        localStorage.setItem('comarketing_merchants', JSON.stringify(merchants));
+        localStorage.setItem('comarketing_campaigns', JSON.stringify(campaigns));
+      } catch(e) {}
+    }
+
+    // Load from localStorage, or use defaults on first visit
+    const merchants = loadData() || JSON.parse(JSON.stringify(DEFAULT_MERCHANTS));
+    const campaigns = loadCampaigns();
 
     const fmtMoney = n => '$' + (Number(n) || 0).toLocaleString(undefined, { maximumFractionDigits: 0 });
     const pct = n => (Number(n) || 0).toFixed(1) + '%';
@@ -1207,6 +1233,7 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
 
       renderPacing();
       renderTerms();
+      saveData();
     }
 
     // Edit merchant - open modal
