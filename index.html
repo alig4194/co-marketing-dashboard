@@ -906,11 +906,17 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
           <select id="cType" required>
             <option value="">Campaign Type</option>
             <option>Email</option>
+            <option>Offer</option>
             <option>Onsite</option>
             <option>Paid Media</option>
             <option>App Push</option>
             <option>Social</option>
             <option>Other</option>
+          </select>
+          <select id="cSpendType">
+            <option value="">Spend Type</option>
+            <option>Internal</option>
+            <option>External</option>
           </select>
           <select id="cStatus" required>
             <option>Proposed</option>
@@ -973,7 +979,11 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
           </div>
           <div class="filter-group">
             <label>Type</label>
-            <select id="cfType"><option value="">All</option><option>Email</option><option>Onsite</option><option>Paid Media</option><option>App Push</option><option>Social</option><option>Other</option></select>
+            <select id="cfType"><option value="">All</option><option>Email</option><option>Offer</option><option>Onsite</option><option>Paid Media</option><option>App Push</option><option>Social</option><option>Other</option></select>
+          </div>
+          <div class="filter-group">
+            <label>Spend Type</label>
+            <select id="cfSpendType"><option value="">All</option><option>Internal</option><option>External</option></select>
           </div>
           <div class="filter-group">
             <label>&nbsp;</label>
@@ -988,6 +998,7 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
                 <th class="sortable" data-sort="merchant">Merchant</th>
                 <th class="sortable" data-sort="product">Product</th>
                 <th class="sortable" data-sort="status">Status</th>
+                <th class="sortable" data-sort="spendType">Spend Type</th>
                 <th class="sortable" data-sort="planned">Planned Spend</th>
                 <th class="sortable" data-sort="actual">Actual Spend</th>
                 <th class="sortable" data-sort="variance">Variance</th>
@@ -1092,11 +1103,17 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
         <select id="ecType" required>
           <option value="">Campaign Type</option>
           <option>Email</option>
+          <option>Offer</option>
           <option>Onsite</option>
           <option>Paid Media</option>
           <option>App Push</option>
           <option>Social</option>
           <option>Other</option>
+        </select>
+        <select id="ecSpendType">
+          <option value="">Spend Type</option>
+          <option>Internal</option>
+          <option>External</option>
         </select>
         <select id="ecStatus" required>
           <option>Proposed</option>
@@ -1217,6 +1234,7 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
       var product = document.getElementById('cfProduct').value;
       var status = document.getElementById('cfStatus').value;
       var type = document.getElementById('cfType').value;
+      var spendType = document.getElementById('cfSpendType').value;
 
       var filtered = campaigns.filter(function(c) {
         if (search && c.name.toLowerCase().indexOf(search) === -1 && c.merchant.toLowerCase().indexOf(search) === -1) return false;
@@ -1224,6 +1242,7 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
         if (product && c.product !== product) return false;
         if (status && c.status !== status) return false;
         if (type && c.type !== type) return false;
+        if (spendType && (c.spendType || '') !== spendType) return false;
         return true;
       });
 
@@ -1235,6 +1254,7 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
             case 'merchant': va = (a.merchant || '').toLowerCase(); vb = (b.merchant || '').toLowerCase(); break;
             case 'product': va = (a.product || '').toLowerCase(); vb = (b.product || '').toLowerCase(); break;
             case 'status': va = (a.status || ''); vb = (b.status || ''); break;
+            case 'spendType': va = (a.spendType || ''); vb = (b.spendType || ''); break;
             case 'planned': va = a.planned || 0; vb = b.planned || 0; break;
             case 'actual': va = a.actual || 0; vb = b.actual || 0; break;
             case 'variance': va = (a.planned || 0) - (a.actual || 0); vb = (b.planned || 0) - (b.actual || 0); break;
@@ -1256,6 +1276,7 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
       document.getElementById('cfProduct').value = '';
       document.getElementById('cfStatus').value = '';
       document.getElementById('cfType').value = '';
+      document.getElementById('cfSpendType').value = '';
       campaignSort = { key: null, dir: 'asc' };
       render();
     }
@@ -1331,6 +1352,7 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
         name: document.getElementById("cName").value.trim(),
         product: document.getElementById("cProduct").value,
         type: document.getElementById("cType").value,
+        spendType: document.getElementById("cSpendType").value,
         status: document.getElementById("cStatus").value,
         start: document.getElementById("cStart").value,
         end: document.getElementById("cEnd").value,
@@ -1598,7 +1620,7 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
       cBody.innerHTML = "";
       if (campaigns.length > 0 && displayCampaigns.length === 0) {
         var noRow = document.createElement("tr");
-        noRow.innerHTML = '<td colspan="11" style="text-align:center;color:var(--muted);padding:16px;">No campaigns match the current filters.</td>';
+        noRow.innerHTML = '<td colspan="12" style="text-align:center;color:var(--muted);padding:16px;">No campaigns match the current filters.</td>';
         cBody.appendChild(noRow);
       }
       displayCampaigns.forEach(function(c) {
@@ -1612,6 +1634,7 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
           '<td>' + escapeHtml(c.merchant) + '</td>' +
           '<td>' + escapeHtml(c.product || '') + '</td>' +
           '<td>' + escapeHtml(c.status) + '</td>' +
+          '<td>' + (c.spendType ? escapeHtml(c.spendType) : '<span style="color:var(--muted);">—</span>') + '</td>' +
           '<td>' + fmtMoney(c.planned) + '</td>' +
           '<td>' + fmtMoney(c.actual) + '</td>' +
           '<td class="' + varianceClass + '">' + varianceLabel + '</td>' +
@@ -1739,6 +1762,7 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
       document.getElementById('ecName').value = c.name;
       document.getElementById('ecProduct').value = c.product || '';
       document.getElementById('ecType').value = c.type;
+      document.getElementById('ecSpendType').value = c.spendType || '';
       document.getElementById('ecStatus').value = c.status;
       document.getElementById('ecStart').value = c.start;
       document.getElementById('ecEnd').value = c.end || '';
@@ -1767,6 +1791,7 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
       campaigns[idx].name = document.getElementById('ecName').value.trim();
       campaigns[idx].product = document.getElementById('ecProduct').value;
       campaigns[idx].type = document.getElementById('ecType').value;
+      campaigns[idx].spendType = document.getElementById('ecSpendType').value;
       campaigns[idx].status = document.getElementById('ecStatus').value;
       campaigns[idx].start = document.getElementById('ecStart').value;
       campaigns[idx].end = document.getElementById('ecEnd').value;
@@ -1786,7 +1811,7 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
     });
 
     // Filter event listeners — re-render on change
-    ['cfSearch', 'cfMerchant', 'cfProduct', 'cfStatus', 'cfType'].forEach(function(id) {
+    ['cfSearch', 'cfMerchant', 'cfProduct', 'cfStatus', 'cfType', 'cfSpendType'].forEach(function(id) {
       var el = document.getElementById(id);
       if (el) el.addEventListener(el.tagName === 'INPUT' ? 'input' : 'change', function() { render(); });
     });
