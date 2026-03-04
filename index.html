@@ -1697,19 +1697,15 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
         '<div class="tile"><div class="label">Live Campaigns</div><div class="value">' + live + '</div></div>' +
         '<div class="tile"><div class="label">Merchants Tracked</div><div class="value">' + merchants.length + '</div></div>';
 
-      // Ad Hoc Spend KPI — rendered in its own container below the grid
+      // Ad Hoc Spend KPI — subtle row below the main tiles
       document.getElementById('adHocKpi').innerHTML =
-        '<div style="border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:linear-gradient(135deg,#fffdf5,rgba(202,138,4,0.08));border-left:3px solid var(--accent-2);">' +
-        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">' +
-        '<div style="font-weight:700;font-size:1rem;color:var(--ink);">⚡ Ad Hoc Spend</div>' +
-        '<span class="tag" style="background:rgba(202,138,4,0.12);color:#92400e;font-size:0.78rem;">' + adHocCamps.length + ' campaign' + (adHocCamps.length !== 1 ? 's' : '') + '</span>' +
-        '</div>' +
-        '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">' +
-        '<div><div class="label" style="font-size:0.75rem;">Campaigns</div><div class="value" style="font-size:1.1rem;">' + adHocCamps.length + '</div></div>' +
-        '<div><div class="label" style="font-size:0.75rem;">Total Planned</div><div class="value" style="font-size:1.1rem;">' + fmtMoney(adHocPlanned) + '</div></div>' +
-        '<div><div class="label" style="font-size:0.75rem;">Total Actual</div><div class="value" style="font-size:1.1rem;">' + fmtMoney(adHocActual) + '</div></div>' +
-        '<div><div class="label" style="font-size:0.75rem;">Variance</div><div class="value" style="font-size:1.1rem;color:' + ((adHocPlanned - adHocActual) < 0 ? 'var(--danger)' : 'var(--ok)') + ';">' + fmtMoney(adHocPlanned - adHocActual) + '</div></div>' +
-        '</div></div>';
+        '<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:8px 12px;border:1px dashed var(--border);border-radius:8px;background:rgba(0,0,0,0.015);">' +
+        '<span style="font-size:0.8rem;font-weight:600;color:var(--muted);">Ad Hoc Spend</span>' +
+        '<span style="font-size:0.8rem;color:var(--muted);">Campaigns: <strong style="color:var(--ink);">' + adHocCamps.length + '</strong></span>' +
+        '<span style="font-size:0.8rem;color:var(--muted);">Planned: <strong style="color:var(--ink);">' + fmtMoney(adHocPlanned) + '</strong></span>' +
+        '<span style="font-size:0.8rem;color:var(--muted);">Actual: <strong style="color:var(--ink);">' + fmtMoney(adHocActual) + '</strong></span>' +
+        '<span style="font-size:0.8rem;color:var(--muted);">Variance: <strong style="color:' + ((adHocPlanned - adHocActual) < 0 ? 'var(--danger)' : 'var(--ink)') + ';">' + fmtMoney(adHocPlanned - adHocActual) + '</strong></span>' +
+        '</div>';
 
       renderPacing();
       renderAdHocSpend();
