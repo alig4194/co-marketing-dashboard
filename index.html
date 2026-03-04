@@ -641,6 +641,7 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
           </select>
           <input id="mCommitment" type="number" min="0" step="0.01" placeholder="Total Commitment" required />
           <input id="mUnlocked" type="number" min="0" step="0.01" placeholder="Funds Unlocked / Paid Out" />
+          <input id="mPlanned" type="number" min="0" step="0.01" placeholder="Planned Spend" />
           <input id="mSpent" type="number" min="0" step="0.01" placeholder="Actual Spend" />
           <input id="mStart" type="date" required />
           <input id="mEnd" type="date" required />
@@ -672,8 +673,8 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
           </select>
           <input id="cStart" type="date" required />
           <input id="cEnd" type="date" placeholder="End Date (optional)" />
-          <input id="cAllocated" type="number" min="0" step="0.01" placeholder="Budget Allocated" required />
-          <input id="cSpent" type="number" min="0" step="0.01" placeholder="Budget Spent (optional)" />
+          <input id="cPlanned" type="number" min="0" step="0.01" placeholder="Planned Spend" required />
+          <input id="cActual" type="number" min="0" step="0.01" placeholder="Actual Spend (optional)" />
           <input id="cImpr" type="number" min="0" step="1" placeholder="Impressions (optional)" />
           <input id="cClicks" type="number" min="0" step="1" placeholder="Clicks (optional)" />
           <input id="cTxn" type="number" min="0" step="1" placeholder="Transactions (optional)" />
@@ -694,10 +695,11 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
                 <th>Product</th>
                 <th>Commitment</th>
                 <th>Unlocked/Paid</th>
+                <th>Planned Spend</th>
                 <th>Actual Spend</th>
-                <th>Unspent Funds</th>
-                <th>Remaining to Unlock</th>
-                <th>Utilization</th>
+                <th>Remaining</th>
+                <th>Start</th>
+                <th>End</th>
                 <th>Flags</th>
                 <th>Actions</th>
               </tr>
@@ -716,11 +718,11 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
                 <th>Campaign</th>
                 <th>Merchant</th>
                 <th>Status</th>
-                <th>Allocated</th>
-                <th>Spent</th>
-                <th>CTR</th>
-                <th>CVR</th>
-                <th>CAC</th>
+                <th>Planned Spend</th>
+                <th>Actual Spend</th>
+                <th>Variance</th>
+                <th>Start</th>
+                <th>End</th>
                 <th>ROI</th>
                 <th>Slack</th>
                 <th>Actions</th>
@@ -779,6 +781,7 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
         </select>
         <input id="editCommitment" type="number" min="0" step="0.01" placeholder="Total Commitment" required />
         <input id="editUnlocked" type="number" min="0" step="0.01" placeholder="Funds Unlocked / Paid Out" />
+        <input id="editPlanned" type="number" min="0" step="0.01" placeholder="Planned Spend" />
         <input id="editSpent" type="number" min="0" step="0.01" placeholder="Actual Spend" />
         <input id="editStart" type="date" required />
         <input id="editEnd" type="date" required />
@@ -817,8 +820,8 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
         </select>
         <input id="ecStart" type="date" required />
         <input id="ecEnd" type="date" />
-        <input id="ecAllocated" type="number" min="0" step="0.01" placeholder="Budget Allocated" required />
-        <input id="ecSpent" type="number" min="0" step="0.01" placeholder="Budget Spent" />
+        <input id="ecPlanned" type="number" min="0" step="0.01" placeholder="Planned Spend" required />
+        <input id="ecActual" type="number" min="0" step="0.01" placeholder="Actual Spend" />
         <input id="ecImpr" type="number" min="0" step="1" placeholder="Impressions" />
         <input id="ecClicks" type="number" min="0" step="1" placeholder="Clicks" />
         <input id="ecTxn" type="number" min="0" step="1" placeholder="Transactions" />
@@ -835,18 +838,19 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
 
   <script>
     const merchants = [
-      { id: crypto.randomUUID(), name: 'DoorDash', product: 'Afterpay', fundingType: 'tiered unlock', commitment: 5000000, unlocked: 0, spent: 0, start: '2025-01-01', end: '2028-01-01', terms: 'Total Value: $5M ($2M Marketing, $3M Integration). Term: 3 years from first purchase. Expiration: 3 years post first transaction. Forfeiture: Yes (unused funds).', unlock: 'Unlock Trigger: 100% launch. $2M Marketing + $3M Integration unlocked upon full launch.' },
-      { id: crypto.randomUUID(), name: 'DoorDash', product: 'Cash App Pay', fundingType: 'performance-based', commitment: 20000000, unlocked: 0, spent: 0, start: '2026-02-03', end: '2029-02-03', terms: 'Total Potential Value: $20M shared JMF pool ($5M Signature Bonus + $15M GPV-based unlocks). Term: 3 years from February 3, 2026. Expiration: February 3, 2029. Forfeiture: Yes (unused funds).', unlock: 'Unlock Trigger: Rolling 12-month GPV thresholds. $5M Signature Bonus + $15M unlocked via GPV milestones.' },
-      { id: crypto.randomUUID(), name: 'Fubo', product: 'Cash App Pay', fundingType: 'fixed', commitment: 40000, unlocked: 0, spent: 0, start: '2025-01-01', end: '2025-12-31', terms: '$40K co-marketing commitment.', unlock: '' },
-      { id: crypto.randomUUID(), name: 'Roku', product: 'Cash App Pay', fundingType: 'fixed', commitment: 1250000, unlocked: 1250000, spent: 0, start: '2024-06-06', end: '2028-06-06', terms: '$1.25M co-marketing commitment. Paid upfront. Term: June 6, 2024 \u2013 June 6, 2028.', unlock: '' },
-      { id: crypto.randomUUID(), name: 'PlayStation', product: 'Cash App Pay', fundingType: 'fixed', commitment: 3750000, unlocked: 0, spent: 0, start: '2024-11-21', end: '2027-11-21', terms: '$3,750,000 over 3 years. Cash App Pay. Expiration: November 21, 2027.', unlock: '' },
-      { id: crypto.randomUUID(), name: 'StockX', product: 'Cash App Pay', fundingType: 'performance-based', commitment: 750000, unlocked: 250000, spent: 0, start: '2025-01-01', end: '2028-01-01', terms: 'Up to $750,000 in total incentives over 3 years, based on GPV milestones (Cash App Pay volume only, not Cash Card). Up to $1M over 3 years.', unlock: 'Integration Fund: $250,000 upon launch of website at 100% traffic \u2714\uFE0F (PAID). GPV Unlocks: $250,000 for every cumulative $50M in GPV processed via Cash App Pay.' },
-      { id: crypto.randomUUID(), name: 'StockX', product: 'Afterpay', fundingType: 'performance-based', commitment: 1000000, unlocked: 0, spent: 0, start: '2025-01-01', end: '2028-01-01', terms: 'Joint Marketing Fund (JMF) \u2013 separate from Integration Fund. Performance-based, tied to cumulative GPV via Afterpay on website. Usage: Co-marketing launch/availability of Afterpay on StockX and supporting ongoing partnership success. Redemption: Invoice referencing tier milestone, Afterpay pays via direct bank transfer within 30 days.', unlock: 'Tier 1: $75M GPV \u2192 $250,000. Tier 2: $150M GPV \u2192 $250,000. Tier 3: $225M GPV \u2192 $250,000. Tier 4: $300M GPV \u2192 $250,000.' }
+      { id: crypto.randomUUID(), name: 'DoorDash', product: 'Afterpay', fundingType: 'tiered unlock', commitment: 5000000, unlocked: 0, planned: 0, spent: 0, start: '2025-01-01', end: '2028-01-01', terms: 'Total Value: $5M ($2M Marketing, $3M Integration). Term: 3 years from first purchase. Expiration: 3 years post first transaction. Forfeiture: Yes (unused funds).', unlock: 'Unlock Trigger: 100% launch. $2M Marketing + $3M Integration unlocked upon full launch.' },
+      { id: crypto.randomUUID(), name: 'DoorDash', product: 'Cash App Pay', fundingType: 'performance-based', commitment: 20000000, unlocked: 0, planned: 0, spent: 0, start: '2026-02-03', end: '2029-02-03', terms: 'Total Potential Value: $20M shared JMF pool ($5M Signature Bonus + $15M GPV-based unlocks). Term: 3 years from February 3, 2026. Expiration: February 3, 2029. Forfeiture: Yes (unused funds).', unlock: 'Unlock Trigger: Rolling 12-month GPV thresholds. $5M Signature Bonus + $15M unlocked via GPV milestones.' },
+      { id: crypto.randomUUID(), name: 'Fubo', product: 'Cash App Pay', fundingType: 'fixed', commitment: 40000, unlocked: 0, planned: 0, spent: 0, start: '2025-01-01', end: '2025-12-31', terms: '$40K co-marketing commitment.', unlock: '' },
+      { id: crypto.randomUUID(), name: 'Roku', product: 'Cash App Pay', fundingType: 'fixed', commitment: 1250000, unlocked: 1250000, planned: 0, spent: 0, start: '2024-06-06', end: '2028-06-06', terms: '$1.25M co-marketing commitment. Paid upfront. Term: June 6, 2024 \u2013 June 6, 2028.', unlock: '' },
+      { id: crypto.randomUUID(), name: 'PlayStation', product: 'Cash App Pay', fundingType: 'fixed', commitment: 3750000, unlocked: 0, planned: 0, spent: 0, start: '2024-11-21', end: '2027-11-21', terms: '$3,750,000 over 3 years. Cash App Pay. Expiration: November 21, 2027.', unlock: '' },
+      { id: crypto.randomUUID(), name: 'StockX', product: 'Cash App Pay', fundingType: 'performance-based', commitment: 750000, unlocked: 250000, planned: 0, spent: 0, start: '2025-01-01', end: '2028-01-01', terms: 'Up to $750,000 in total incentives over 3 years, based on GPV milestones (Cash App Pay volume only, not Cash Card). Up to $1M over 3 years.', unlock: 'Integration Fund: $250,000 upon launch of website at 100% traffic \u2714\uFE0F (PAID). GPV Unlocks: $250,000 for every cumulative $50M in GPV processed via Cash App Pay.' },
+      { id: crypto.randomUUID(), name: 'StockX', product: 'Afterpay', fundingType: 'performance-based', commitment: 1000000, unlocked: 0, planned: 0, spent: 0, start: '2025-01-01', end: '2028-01-01', terms: 'Joint Marketing Fund (JMF) \u2013 separate from Integration Fund. Performance-based, tied to cumulative GPV via Afterpay on website. Usage: Co-marketing launch/availability of Afterpay on StockX and supporting ongoing partnership success. Redemption: Invoice referencing tier milestone, Afterpay pays via direct bank transfer within 30 days.', unlock: 'Tier 1: $75M GPV \u2192 $250,000. Tier 2: $150M GPV \u2192 $250,000. Tier 3: $225M GPV \u2192 $250,000. Tier 4: $300M GPV \u2192 $250,000.' }
     ];
     const campaigns = [];
 
     const fmtMoney = n => '$' + (Number(n) || 0).toLocaleString(undefined, { maximumFractionDigits: 0 });
     const pct = n => (Number(n) || 0).toFixed(1) + '%';
+    const fmtDate = d => d ? new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
 
     const monthDiff = (start, end) => {
       const s = new Date(start), e = new Date(end);
@@ -862,6 +866,14 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
 
     const daysUntil = d => Math.ceil((new Date(d) - new Date()) / (1000 * 60 * 60 * 24));
 
+    // Helper: get campaign rollups for a merchant
+    function getCampaignRollup(merchantName) {
+      var mc = campaigns.filter(function(c) { return c.merchant === merchantName; });
+      var totalPlanned = mc.reduce(function(s, c) { return s + (c.planned || 0); }, 0);
+      var totalActual = mc.reduce(function(s, c) { return s + (c.actual || 0); }, 0);
+      return { campaignPlanned: totalPlanned, campaignActual: totalActual, campaignCount: mc.length };
+    }
+
     document.getElementById("merchantForm").addEventListener("submit", e => {
       e.preventDefault();
       const m = {
@@ -871,6 +883,7 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
         fundingType: document.getElementById("mFunding").value,
         commitment: Number(document.getElementById("mCommitment").value),
         unlocked: Number(document.getElementById("mUnlocked").value) || 0,
+        planned: Number(document.getElementById("mPlanned").value) || 0,
         spent: Number(document.getElementById("mSpent").value) || 0,
         start: document.getElementById("mStart").value,
         end: document.getElementById("mEnd").value,
@@ -892,8 +905,8 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
         status: document.getElementById("cStatus").value,
         start: document.getElementById("cStart").value,
         end: document.getElementById("cEnd").value,
-        allocated: Number(document.getElementById("cAllocated").value),
-        spent: Number(document.getElementById("cSpent").value),
+        planned: Number(document.getElementById("cPlanned").value) || 0,
+        actual: Number(document.getElementById("cActual").value) || 0,
         impressions: Number(document.getElementById("cImpr").value) || 0,
         clicks: Number(document.getElementById("cClicks").value) || 0,
         transactions: Number(document.getElementById("cTxn").value) || 0,
@@ -942,11 +955,14 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
     }
 
     function campaignMetrics(c) {
+      const actual = c.actual || 0;
+      const planned = c.planned || 0;
+      const variance = planned - actual;
       const ctr = c.impressions ? (c.clicks / c.impressions) * 100 : 0;
       const cvr = c.clicks ? (c.transactions / c.clicks) * 100 : 0;
-      const cac = c.users ? (c.spent / c.users) : 0;
-      const roi = c.spent ? ((c.gmv - c.spent) / c.spent) * 100 : 0;
-      return { ctr, cvr, cac, roi };
+      const cac = c.users ? (actual / c.users) : 0;
+      const roi = actual ? ((c.gmv - actual) / actual) * 100 : 0;
+      return { actual, planned, variance, ctr, cvr, cac, roi };
     }
 
     function escapeHtml(str) {
@@ -1079,32 +1095,30 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
       var mBody = document.querySelector("#merchantTable tbody");
       var cBody = document.querySelector("#campaignTable tbody");
 
+      // Merchant Tracker
       mBody.innerHTML = "";
       merchants.forEach(function(m) {
         var mm = merchantMetrics(m);
+        var rollup = getCampaignRollup(m.name);
+        var totalPlanned = (m.planned || 0) + rollup.campaignPlanned;
+        var totalActual = (m.spent || 0) + rollup.campaignActual;
+        var remaining = m.commitment - totalActual;
         var flags = [];
-        if (mm.toEnd <= 60 && mm.remainingToUnlock > 0) {
-          flags.push("Funds expiring <60d");
-        }
-        if (mm.pacingRatio < 70) {
-          flags.push("Under pacing");
-        }
-        if (m.unlock && /unlock|tranche|tier|threshold/i.test(m.unlock)) {
-          flags.push("Threshold tracking");
-        }
-        if (mm.unspentFunds > 0) {
-          flags.push("Unspent funds");
-        }
+        if (mm.toEnd <= 60 && remaining > 0) flags.push("Funds expiring <60d");
+        if (mm.pacingRatio < 70) flags.push("Under pacing");
+        if (m.unlock && /unlock|tranche|tier|threshold/i.test(m.unlock)) flags.push("Threshold tracking");
+        if (mm.unspentFunds > 0) flags.push("Unspent funds");
         var tr = document.createElement("tr");
         tr.innerHTML =
-          '<td><strong>' + escapeHtml(m.name) + '</strong></td>' +
+          '<td><strong>' + escapeHtml(m.name) + '</strong><br><span class="label">' + escapeHtml(m.product) + '</span></td>' +
           '<td>' + escapeHtml(m.product) + '</td>' +
           '<td>' + fmtMoney(m.commitment) + '</td>' +
           '<td>' + fmtMoney(mm.unlocked) + '</td>' +
-          '<td>' + fmtMoney(m.spent) + '</td>' +
-          '<td>' + fmtMoney(Math.max(0, mm.unspentFunds)) + '</td>' +
-          '<td>' + fmtMoney(Math.max(0, mm.remainingToUnlock)) + '</td>' +
-          '<td>' + pct(mm.util) + '</td>' +
+          '<td>' + fmtMoney(totalPlanned) + '</td>' +
+          '<td>' + fmtMoney(totalActual) + '</td>' +
+          '<td>' + fmtMoney(Math.max(0, remaining)) + '</td>' +
+          '<td>' + fmtDate(m.start) + '</td>' +
+          '<td>' + fmtDate(m.end) + '</td>' +
           '<td>' + (flags.length ? flags.map(function(f) {
             var cls = 'tag';
             if (f.indexOf('expiring') !== -1) cls += ' danger';
@@ -1116,35 +1130,44 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
         mBody.appendChild(tr);
       });
 
+      // Campaign Tracker
       cBody.innerHTML = "";
       campaigns.forEach(function(c) {
         var cm = campaignMetrics(c);
+        var variance = cm.variance;
+        var varianceClass = variance < 0 ? 'risk' : (variance > 0 ? 'ok' : '');
+        var varianceLabel = variance > 0 ? fmtMoney(variance) + ' under' : (variance < 0 ? fmtMoney(Math.abs(variance)) + ' over' : '—');
         var tr = document.createElement("tr");
         tr.innerHTML =
           '<td><strong>' + escapeHtml(c.name) + '</strong><br><span class="label">' + escapeHtml(c.type) + '</span></td>' +
           '<td>' + escapeHtml(c.merchant) + '</td>' +
           '<td>' + escapeHtml(c.status) + '</td>' +
-          '<td>' + fmtMoney(c.allocated) + '</td>' +
-          '<td>' + fmtMoney(c.spent) + '</td>' +
-          '<td>' + pct(cm.ctr) + '</td>' +
-          '<td>' + pct(cm.cvr) + '</td>' +
-          '<td>' + fmtMoney(cm.cac) + '</td>' +
+          '<td>' + fmtMoney(c.planned) + '</td>' +
+          '<td>' + fmtMoney(c.actual) + '</td>' +
+          '<td class="' + varianceClass + '">' + varianceLabel + '</td>' +
+          '<td>' + fmtDate(c.start) + '</td>' +
+          '<td>' + fmtDate(c.end) + '</td>' +
           '<td class="' + (cm.roi < 0 ? 'risk' : 'ok') + '">' + pct(cm.roi) + '</td>' +
           '<td>' + (c.slack ? '<a href="' + escapeHtml(c.slack) + '" target="_blank" rel="noopener">Link</a>' : '<span class="risk">Missing</span>') + '</td>' +
           '<td><button class="btn-sm btn-edit" onclick="editCampaign(\'' + c.id + '\')">Edit</button> <button class="btn-sm btn-delete" onclick="deleteCampaign(\'' + c.id + '\')">Delete</button></td>';
         cBody.appendChild(tr);
       });
 
+      // KPI Tiles
       var totalCommitted = merchants.reduce(function(s, m) { return s + m.commitment; }, 0);
       var totalUnlocked = merchants.reduce(function(s, m) { return s + (m.unlocked || 0); }, 0);
-      var totalSpent = merchants.reduce(function(s, m) { return s + (m.spent || 0); }, 0);
-      var totalUnspent = totalUnlocked - totalSpent;
-      var utilAvg = merchants.length ? merchants.reduce(function(s, m) { return s + merchantMetrics(m).util; }, 0) / merchants.length : 0;
+      var totalMerchPlanned = merchants.reduce(function(s, m) { return s + (m.planned || 0); }, 0);
+      var totalMerchActual = merchants.reduce(function(s, m) { return s + (m.spent || 0); }, 0);
+      var totalCampPlanned = campaigns.reduce(function(s, c) { return s + (c.planned || 0); }, 0);
+      var totalCampActual = campaigns.reduce(function(s, c) { return s + (c.actual || 0); }, 0);
+      var grandPlanned = totalMerchPlanned + totalCampPlanned;
+      var grandActual = totalMerchActual + totalCampActual;
+      var remaining = totalCommitted - grandActual;
       var live = campaigns.filter(function(c) { return c.status === "Live"; }).length;
       var blendedROI = campaigns.reduce(function(acc, c) {
         var cm = campaignMetrics(c);
-        acc.weighted += cm.roi * c.spent;
-        acc.spend += c.spent;
+        acc.weighted += cm.roi * (c.actual || 0);
+        acc.spend += (c.actual || 0);
         return acc;
       }, { weighted: 0, spend: 0 });
       var portfolioROI = blendedROI.spend ? blendedROI.weighted / blendedROI.spend : 0;
@@ -1152,13 +1175,13 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
         .reduce(function(s, m) { return s + (m.commitment - (m.unlocked || 0)); }, 0);
 
       document.getElementById("kpiTiles").innerHTML =
-        '<div class="tile"><div class="label">Total Funds Managed</div><div class="value">' + fmtMoney(totalCommitted) + '</div></div>' +
+        '<div class="tile"><div class="label">Total Commitment</div><div class="value">' + fmtMoney(totalCommitted) + '</div></div>' +
         '<div class="tile"><div class="label">Total Unlocked/Paid</div><div class="value">' + fmtMoney(totalUnlocked) + '</div></div>' +
-        '<div class="tile"><div class="label">Total Actual Spend</div><div class="value">' + fmtMoney(totalSpent) + '</div></div>' +
-        '<div class="tile"><div class="label">Unlocked but Unspent</div><div class="value">' + fmtMoney(Math.max(0, totalUnspent)) + '</div></div>' +
-        '<div class="tile"><div class="label">Funds Expiring This Quarter</div><div class="value">' + fmtMoney(expiringQuarter) + '</div></div>' +
+        '<div class="tile"><div class="label">Total Planned Spend</div><div class="value">' + fmtMoney(grandPlanned) + '</div></div>' +
+        '<div class="tile"><div class="label">Total Actual Spend</div><div class="value">' + fmtMoney(grandActual) + '</div></div>' +
+        '<div class="tile"><div class="label">Remaining Balance</div><div class="value">' + fmtMoney(Math.max(0, remaining)) + '</div></div>' +
+        '<div class="tile"><div class="label">Funds Expiring This Qtr</div><div class="value">' + fmtMoney(expiringQuarter) + '</div></div>' +
         '<div class="tile"><div class="label">Live Campaigns</div><div class="value">' + live + '</div></div>' +
-        '<div class="tile"><div class="label">Blended ROI</div><div class="value ' + (portfolioROI < 0 ? 'risk' : 'ok') + '">' + pct(portfolioROI) + '</div></div>' +
         '<div class="tile"><div class="label">Merchants Tracked</div><div class="value">' + merchants.length + '</div></div>';
 
       renderPacing();
@@ -1175,6 +1198,7 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
       document.getElementById('editFunding').value = m.fundingType;
       document.getElementById('editCommitment').value = m.commitment;
       document.getElementById('editUnlocked').value = m.unlocked || 0;
+      document.getElementById('editPlanned').value = m.planned || 0;
       document.getElementById('editSpent').value = m.spent || 0;
       document.getElementById('editStart').value = m.start;
       document.getElementById('editEnd').value = m.end;
@@ -1183,7 +1207,6 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
       document.getElementById('editModal').classList.add('active');
     }
 
-    // Delete merchant
     function deleteMerchant(id) {
       var m = merchants.find(function(x) { return x.id === id; });
       if (!m) return;
@@ -1193,7 +1216,6 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
       render();
     }
 
-    // Edit form submit
     document.getElementById('editForm').addEventListener('submit', function(e) {
       e.preventDefault();
       var id = document.getElementById('editId').value;
@@ -1204,6 +1226,7 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
       merchants[idx].fundingType = document.getElementById('editFunding').value;
       merchants[idx].commitment = Number(document.getElementById('editCommitment').value);
       merchants[idx].unlocked = Number(document.getElementById('editUnlocked').value) || 0;
+      merchants[idx].planned = Number(document.getElementById('editPlanned').value) || 0;
       merchants[idx].spent = Number(document.getElementById('editSpent').value) || 0;
       merchants[idx].start = document.getElementById('editStart').value;
       merchants[idx].end = document.getElementById('editEnd').value;
@@ -1213,17 +1236,14 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
       render();
     });
 
-    // Cancel edit
     document.getElementById('editCancel').addEventListener('click', function() {
       document.getElementById('editModal').classList.remove('active');
     });
-
-    // Close modal on overlay click
     document.getElementById('editModal').addEventListener('click', function(e) {
       if (e.target === this) this.classList.remove('active');
     });
 
-    // Edit campaign - open modal
+    // Campaign edit/delete
     function editCampaign(id) {
       var c = campaigns.find(function(x) { return x.id === id; });
       if (!c) return;
@@ -1234,8 +1254,8 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
       document.getElementById('ecStatus').value = c.status;
       document.getElementById('ecStart').value = c.start;
       document.getElementById('ecEnd').value = c.end || '';
-      document.getElementById('ecAllocated').value = c.allocated;
-      document.getElementById('ecSpent').value = c.spent || 0;
+      document.getElementById('ecPlanned').value = c.planned || 0;
+      document.getElementById('ecActual').value = c.actual || 0;
       document.getElementById('ecImpr').value = c.impressions || '';
       document.getElementById('ecClicks').value = c.clicks || '';
       document.getElementById('ecTxn').value = c.transactions || '';
@@ -1245,7 +1265,6 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
       document.getElementById('editCampaignModal').classList.add('active');
     }
 
-    // Delete campaign
     function deleteCampaign(id) {
       var c = campaigns.find(function(x) { return x.id === id; });
       if (!c) return;
@@ -1255,7 +1274,6 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
       render();
     }
 
-    // Edit campaign form submit
     document.getElementById('editCampaignForm').addEventListener('submit', function(e) {
       e.preventDefault();
       var id = document.getElementById('ecId').value;
@@ -1267,8 +1285,8 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
       campaigns[idx].status = document.getElementById('ecStatus').value;
       campaigns[idx].start = document.getElementById('ecStart').value;
       campaigns[idx].end = document.getElementById('ecEnd').value;
-      campaigns[idx].allocated = Number(document.getElementById('ecAllocated').value);
-      campaigns[idx].spent = Number(document.getElementById('ecSpent').value) || 0;
+      campaigns[idx].planned = Number(document.getElementById('ecPlanned').value) || 0;
+      campaigns[idx].actual = Number(document.getElementById('ecActual').value) || 0;
       campaigns[idx].impressions = Number(document.getElementById('ecImpr').value) || 0;
       campaigns[idx].clicks = Number(document.getElementById('ecClicks').value) || 0;
       campaigns[idx].transactions = Number(document.getElementById('ecTxn').value) || 0;
@@ -1279,12 +1297,9 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
       render();
     });
 
-    // Cancel campaign edit
     document.getElementById('editCampaignCancel').addEventListener('click', function() {
       document.getElementById('editCampaignModal').classList.remove('active');
     });
-
-    // Close campaign modal on overlay click
     document.getElementById('editCampaignModal').addEventListener('click', function(e) {
       if (e.target === this) this.classList.remove('active');
     });
