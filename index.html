@@ -1011,9 +1011,20 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
       } catch(e) {}
     }
 
+    // Default campaigns from spreadsheet
+    var DEFAULT_CAMPAIGNS = [
+      { id: crypto.randomUUID(), merchant: 'PlayStation', product: 'Cash App Pay', name: 'PlayStation Internal - Aug 2025', type: 'Other', status: 'Proposed', start: '2025-08-01', end: '2025-08-31', planned: 1500000, actual: 0, gmv: 0, slack: 'https://sq-block.slack.com/archives/C0745LDD1H8/p1749572740830359' },
+      { id: crypto.randomUUID(), merchant: 'PlayStation', product: 'Cash App Pay', name: 'PlayStation Internal - May 2025', type: 'Other', status: 'Proposed', start: '2025-05-14', end: '2025-06-03', planned: 2000000, actual: 0, gmv: 0, slack: 'https://sq-block.slack.com/archives/C0745LDD1H8/p1750183697314359' },
+      { id: crypto.randomUUID(), merchant: 'Roku', product: 'Cash App Pay', name: 'Roku External - Sep 2025', type: 'Other', status: 'Proposed', start: '2025-09-01', end: '2025-09-30', planned: 575000, actual: 0, gmv: 0, slack: 'https://sq-block.slack.com/archives/C0745LDD1H8/p1758304870952529' },
+      { id: crypto.randomUUID(), merchant: 'Roku', product: 'Cash App Pay', name: 'Roku External - Feb 2026', type: 'Other', status: 'Proposed', start: '2026-02-02', end: '2026-02-28', planned: 140000, actual: 0, gmv: 0, slack: 'https://sq-block.slack.com/archives/C0745LDD1H8/p1768434757665269' },
+      { id: crypto.randomUUID(), merchant: 'PlayStation', product: 'Cash App Pay', name: 'PlayStation Internal - Jan 2026', type: 'Other', status: 'Proposed', start: '2026-01-23', end: '', planned: 1061574, actual: 0, gmv: 0, slack: '' }
+    ];
+
     // Load from localStorage, or use defaults on first visit
     const merchants = loadData() || JSON.parse(JSON.stringify(DEFAULT_MERCHANTS));
-    const campaigns = loadCampaigns();
+    var loadedCampaigns = loadCampaigns();
+    // Seed default campaigns if none exist
+    const campaigns = loadedCampaigns.length > 0 ? loadedCampaigns : JSON.parse(JSON.stringify(DEFAULT_CAMPAIGNS));
 
     // Campaign filter/sort state
     var campaignSort = { key: null, dir: 'asc' };
