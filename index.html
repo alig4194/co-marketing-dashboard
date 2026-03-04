@@ -1017,7 +1017,9 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
       { id: crypto.randomUUID(), merchant: 'PlayStation', product: 'Cash App Pay', name: 'PlayStation Internal - May 2025', type: 'Other', status: 'Proposed', start: '2025-05-14', end: '2025-06-03', planned: 2000000, actual: 0, gmv: 0, slack: 'https://sq-block.slack.com/archives/C0745LDD1H8/p1750183697314359' },
       { id: crypto.randomUUID(), merchant: 'Roku', product: 'Cash App Pay', name: 'Roku External - Sep 2025', type: 'Other', status: 'Proposed', start: '2025-09-01', end: '2025-09-30', planned: 575000, actual: 0, gmv: 0, slack: 'https://sq-block.slack.com/archives/C0745LDD1H8/p1758304870952529' },
       { id: crypto.randomUUID(), merchant: 'Roku', product: 'Cash App Pay', name: 'Roku External - Feb 2026', type: 'Other', status: 'Proposed', start: '2026-02-02', end: '2026-02-28', planned: 140000, actual: 0, gmv: 0, slack: 'https://sq-block.slack.com/archives/C0745LDD1H8/p1768434757665269' },
-      { id: crypto.randomUUID(), merchant: 'PlayStation', product: 'Cash App Pay', name: 'PlayStation Internal - Jan 2026', type: 'Other', status: 'Proposed', start: '2026-01-23', end: '', planned: 1061574, actual: 0, gmv: 0, slack: '' }
+      { id: crypto.randomUUID(), merchant: 'PlayStation', product: 'Cash App Pay', name: 'PlayStation Internal - Jan 2026', type: 'Other', status: 'Proposed', start: '2026-01-23', end: '', planned: 1061574, actual: 0, gmv: 0, slack: '' },
+      { id: crypto.randomUUID(), merchant: 'DoorDash', product: 'Cash App Pay', name: 'Tax Promo', type: 'Internal', status: 'Proposed', start: '2026-03-20', end: '2026-03-20', planned: 2000000, actual: 0, gmv: 0, slack: 'https://sq-block.slack.com/archives/C0745LDD1H8/p1771358158294659' },
+      { id: crypto.randomUUID(), merchant: 'DoorDash', product: 'Cash App Pay', name: 'Tax Sweeps', type: 'External', status: 'Proposed', start: '2026-03-20', end: '2026-03-20', planned: 200000, actual: 0, gmv: 0, slack: 'https://sq-block.slack.com/archives/C0745LDD1H8/p1771362678188639' }
     ];
 
     // Load from localStorage, or use defaults on first visit
@@ -1025,6 +1027,19 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
     var loadedCampaigns = loadCampaigns();
     // Seed default campaigns if none exist
     const campaigns = loadedCampaigns.length > 0 ? loadedCampaigns : JSON.parse(JSON.stringify(DEFAULT_CAMPAIGNS));
+
+    // One-time migration v3: inject DoorDash campaigns if not already present
+    if (!localStorage.getItem('comarketing_campaigns_migrated_v3')) {
+      var newCampaigns = [
+        { id: crypto.randomUUID(), merchant: 'DoorDash', product: 'Cash App Pay', name: 'Tax Promo', type: 'Internal', status: 'Proposed', start: '2026-03-20', end: '2026-03-20', planned: 2000000, actual: 0, gmv: 0, slack: 'https://sq-block.slack.com/archives/C0745LDD1H8/p1771358158294659' },
+        { id: crypto.randomUUID(), merchant: 'DoorDash', product: 'Cash App Pay', name: 'Tax Sweeps', type: 'External', status: 'Proposed', start: '2026-03-20', end: '2026-03-20', planned: 200000, actual: 0, gmv: 0, slack: 'https://sq-block.slack.com/archives/C0745LDD1H8/p1771362678188639' }
+      ];
+      newCampaigns.forEach(function(nc) {
+        var exists = campaigns.some(function(c) { return c.name === nc.name && c.merchant === nc.merchant; });
+        if (!exists) campaigns.push(nc);
+      });
+      localStorage.setItem('comarketing_campaigns_migrated_v3', 'true');
+    }
 
     // Campaign filter/sort state
     var campaignSort = { key: null, dir: 'asc' };
