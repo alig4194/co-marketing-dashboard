@@ -905,6 +905,7 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
           </select>
           <select id="cType" required>
             <option value="">Campaign Type</option>
+            <option>Ad Hoc</option>
             <option>Email</option>
             <option>Offer</option>
             <option>Onsite</option>
@@ -979,7 +980,7 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
           </div>
           <div class="filter-group">
             <label>Type</label>
-            <select id="cfType"><option value="">All</option><option>Email</option><option>Offer</option><option>Onsite</option><option>Paid Media</option><option>App Push</option><option>Social</option><option>Other</option></select>
+            <select id="cfType"><option value="">All</option><option>Ad Hoc</option><option>Email</option><option>Offer</option><option>Onsite</option><option>Paid Media</option><option>App Push</option><option>Social</option><option>Other</option></select>
           </div>
           <div class="filter-group">
             <label>Spend Type</label>
@@ -1016,6 +1017,12 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
       <article class="card span-12" id="pacingSection">
         <h2>Pacing Tracker</h2>
         <div id="pacingContent"></div>
+      </article>
+
+      <article class="card span-12" id="adHocSection">
+        <h2>Ad Hoc Spend</h2>
+        <p style="color:var(--muted);margin-bottom:12px;">Campaigns marked as "Ad Hoc" type. These also appear in the Campaign Tracker above.</p>
+        <div id="adHocContent"></div>
       </article>
 
       <article class="card span-12" id="termsSection">
@@ -1102,6 +1109,7 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
         </select>
         <select id="ecType" required>
           <option value="">Campaign Type</option>
+          <option>Ad Hoc</option>
           <option>Email</option>
           <option>Offer</option>
           <option>Onsite</option>
@@ -1684,8 +1692,64 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
         '<div class="tile"><div class="label">Merchants Tracked</div><div class="value">' + merchants.length + '</div></div>';
 
       renderPacing();
+      renderAdHocSpend();
       renderTerms();
       saveData();
+    }
+
+    function renderAdHocSpend() {
+      var container = document.getElementById('adHocContent');
+      var adHocCampaigns = campaigns.filter(function(c) { return c.type === 'Ad Hoc'; });
+
+      if (adHocCampaigns.length === 0) {
+        container.innerHTML = '<div class="pacing-empty">No ad hoc spend campaigns yet. Add a campaign with type "Ad Hoc" to track it here.</div>';
+        return;
+      }
+
+      var totalPlanned = adHocCampaigns.reduce(function(s, c) { return s + (c.planned || 0); }, 0);
+      var totalActual = adHocCampaigns.reduce(function(s, c) { return s + (c.actual || 0); }, 0);
+
+      var html = '';
+      // Summary KPI row
+      html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;">';
+      html += '<div class="pacing-stat" style="background:var(--cash-green-light);padding:10px;border-radius:8px;border:1px solid var(--border);">';
+      html += '<div class="stat-label">Ad Hoc Campaigns</div><div class="stat-value">' + adHocCampaigns.length + '</div></div>';
+      html += '<div class="pacing-stat" style="background:var(--cash-green-light);padding:10px;border-radius:8px;border:1px solid var(--border);">';
+      html += '<div class="stat-label">Total Planned</div><div class="stat-value">' + fmtMoney(totalPlanned) + '</div></div>';
+      html += '<div class="pacing-stat" style="background:var(--cash-green-light);padding:10px;border-radius:8px;border:1px solid var(--border);">';
+      html += '<div class="stat-label">Total Actual</div><div class="stat-value">' + fmtMoney(totalActual) + '</div></div>';
+      html += '<div class="pacing-stat" style="background:var(--cash-green-light);padding:10px;border-radius:8px;border:1px solid var(--border);">';
+      html += '<div class="stat-label">Variance</div><div class="stat-value">' + fmtMoney(totalPlanned - totalActual) + '</div></div>';
+      html += '</div>';
+
+      // Table of ad hoc campaigns
+      html += '<div class="table-wrap"><table>';
+      html += '<thead><tr>';
+      html += '<th>Campaign</th><th>Merchant</th><th>Product</th><th>Status</th><th>Spend Type</th><th>Planned</th><th>Actual</th><th>Variance</th><th>Start</th><th>End</th><th>Slack</th><th>Actions</th>';
+      html += '</tr></thead><tbody>';
+
+      adHocCampaigns.forEach(function(c) {
+        var variance = (c.planned || 0) - (c.actual || 0);
+        var varianceClass = variance < 0 ? 'risk' : (variance > 0 ? 'ok' : '');
+        var varianceLabel = variance > 0 ? fmtMoney(variance) + ' under' : (variance < 0 ? fmtMoney(Math.abs(variance)) + ' over' : '—');
+        html += '<tr>';
+        html += '<td><strong>' + escapeHtml(c.name) + '</strong><br><span class="label">Ad Hoc</span></td>';
+        html += '<td>' + escapeHtml(c.merchant) + '</td>';
+        html += '<td>' + escapeHtml(c.product || '') + '</td>';
+        html += '<td>' + escapeHtml(c.status) + '</td>';
+        html += '<td>' + (c.spendType ? escapeHtml(c.spendType) : '<span style="color:var(--muted);">—</span>') + '</td>';
+        html += '<td>' + fmtMoney(c.planned) + '</td>';
+        html += '<td>' + fmtMoney(c.actual) + '</td>';
+        html += '<td class="' + varianceClass + '">' + varianceLabel + '</td>';
+        html += '<td>' + fmtDate(c.start) + '</td>';
+        html += '<td>' + fmtDate(c.end) + '</td>';
+        html += '<td>' + (c.slack ? '<a href="' + escapeHtml(c.slack) + '" target="_blank" rel="noopener">Link</a>' : '<span class="risk">Missing</span>') + '</td>';
+        html += '<td><button class="btn-sm btn-edit" onclick="editCampaign(\'' + c.id + '\')">Edit</button></td>';
+        html += '</tr>';
+      });
+
+      html += '</tbody></table></div>';
+      container.innerHTML = html;
     }
 
     // Edit merchant - open modal
