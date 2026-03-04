@@ -856,7 +856,14 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
           <li>Underutilized Budget Alert Report</li>
           <li>Quarterly Recap</li>
         </ul>
-        <button class="secondary" id="downloadJson">Download Data JSON</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+          <button class="secondary" id="downloadJson">Download Data JSON</button>
+          <label class="secondary" style="display:inline-block;padding:9px 10px;border:1px solid var(--border);border-radius:10px;cursor:pointer;font-weight:700;font-size:0.95rem;text-align:center;">
+            Import Data from Backup
+            <input type="file" id="importJson" accept=".json" style="display:none;" />
+          </label>
+        </div>
+        <p id="autoBackupNote" style="margin-top:8px;font-size:0.78rem;color:var(--muted);font-style:italic;"></p>
       </article>
     </section>
   </div>
@@ -1604,6 +1611,76 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
         render();
       });
     });
+
+    // === AUTO-BACKUP (weekly) ===
+    function downloadBackup() {
+      var data = { generatedAt: new Date().toISOString(), merchants: merchants, campaigns: campaigns };
+      var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'co_marketing_backup_' + new Date().toISOString().slice(0, 10) + '.json';
+      a.click();
+      URL.revokeObjectURL(a.href);
+      localStorage.setItem('comarketing_last_backup', new Date().toISOString());
+      updateBackupNote();
+    }
+
+    function checkAutoBackup() {
+      var lastBackup = localStorage.getItem('comarketing_last_backup');
+      var now = new Date();
+      if (!lastBackup) {
+        // First time — do a backup now
+        downloadBackup();
+        return;
+      }
+      var last = new Date(lastBackup);
+      var daysSince = Math.floor((now - last) / (1000 * 60 * 60 * 24));
+      if (daysSince >= 7) {
+        downloadBackup();
+      }
+    }
+
+    function updateBackupNote() {
+      var el = document.getElementById('autoBackupNote');
+      if (!el) return;
+      var lastBackup = localStorage.getItem('comarketing_last_backup');
+      if (lastBackup) {
+        var d = new Date(lastBackup);
+        el.textContent = 'Last auto-backup: ' + fmtDate(d.toISOString().slice(0, 10)) + ' · Auto-saves every 7 days';
+      } else {
+        el.textContent = 'No backup yet — one will be created automatically.';
+      }
+    }
+
+    // === IMPORT FROM BACKUP ===
+    document.getElementById('importJson').addEventListener('change', function(e) {
+      var file = e.target.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function(ev) {
+        try {
+          var data = JSON.parse(ev.target.result);
+          if (data.merchants && Array.isArray(data.merchants)) {
+            merchants.length = 0;
+            data.merchants.forEach(function(m) { merchants.push(m); });
+          }
+          if (data.campaigns && Array.isArray(data.campaigns)) {
+            campaigns.length = 0;
+            data.campaigns.forEach(function(c) { campaigns.push(c); });
+          }
+          render();
+          alert('Data imported successfully! ' + merchants.length + ' merchants and ' + campaigns.length + ' campaigns restored.');
+        } catch(err) {
+          alert('Error importing file: ' + err.message);
+        }
+      };
+      reader.readAsText(file);
+      e.target.value = '';
+    });
+
+    // Run auto-backup check and show status
+    updateBackupNote();
+    checkAutoBackup();
 
     render();
   </script>
