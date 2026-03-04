@@ -587,6 +587,156 @@
     @media (max-width: 600px) {
       .pacing-stats { grid-template-columns: repeat(2, 1fr); }
     }
+
+    /* === Backup Reminder Banner === */
+    .backup-banner {
+      background: linear-gradient(135deg, #fef3cd, #fff3e0);
+      border-bottom: 3px solid var(--warn);
+      padding: 0;
+      position: sticky;
+      top: 0;
+      z-index: 999;
+      box-shadow: 0 4px 16px rgba(217, 119, 6, 0.18);
+      animation: bannerSlideDown 0.4s ease-out;
+    }
+    .backup-banner.danger-mode {
+      background: linear-gradient(135deg, #fee2e2, #fef2f2);
+      border-bottom-color: var(--danger);
+      box-shadow: 0 4px 16px rgba(185, 28, 28, 0.18);
+    }
+    @keyframes bannerSlideDown {
+      from { transform: translateY(-100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .backup-banner-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .backup-banner-icon {
+      font-size: 1.6rem;
+      flex-shrink: 0;
+      animation: bannerPulse 2s ease-in-out infinite;
+    }
+    @keyframes bannerPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.15); }
+    }
+    .backup-banner-text {
+      flex: 1;
+      min-width: 200px;
+    }
+    .backup-banner-text strong {
+      display: block;
+      font-size: 0.95rem;
+      color: #92400e;
+      margin-bottom: 2px;
+    }
+    .danger-mode .backup-banner-text strong {
+      color: var(--danger);
+    }
+    .backup-banner-text span {
+      font-size: 0.84rem;
+      color: #78350f;
+      line-height: 1.4;
+    }
+    .danger-mode .backup-banner-text span {
+      color: #7f1d1d;
+    }
+    .backup-banner-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .backup-banner-cta {
+      background: linear-gradient(135deg, var(--warn), #b45309);
+      color: #fff;
+      border: none;
+      padding: 9px 20px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+      box-shadow: 0 2px 8px rgba(217, 119, 6, 0.3);
+    }
+    .danger-mode .backup-banner-cta {
+      background: linear-gradient(135deg, var(--danger), #991b1b);
+      box-shadow: 0 2px 8px rgba(185, 28, 28, 0.3);
+    }
+    .backup-banner-cta:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(217, 119, 6, 0.4);
+    }
+    .backup-banner-dismiss {
+      background: none;
+      border: 1px solid rgba(146, 64, 14, 0.25);
+      color: #92400e;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s;
+    }
+    .backup-banner-dismiss:hover {
+      background: rgba(146, 64, 14, 0.1);
+    }
+
+    /* Backup status badge in Reporting card */
+    .backup-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-top: 12px;
+      width: 100%;
+    }
+    .backup-status.status-ok {
+      background: rgba(0, 184, 43, 0.08);
+      border: 1px solid rgba(0, 184, 43, 0.25);
+      color: #166534;
+    }
+    .backup-status.status-warn {
+      background: var(--warn-light);
+      border: 1px solid rgba(217, 119, 6, 0.3);
+      color: #92400e;
+    }
+    .backup-status.status-danger {
+      background: var(--danger-light);
+      border: 1px solid rgba(185, 28, 28, 0.3);
+      color: var(--danger);
+    }
+    .backup-status .status-icon { font-size: 1.1rem; }
+    .backup-status .status-text { flex: 1; }
+    .backup-status .backup-btn-inline {
+      background: var(--warn);
+      color: #fff;
+      border: none;
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.8rem;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .backup-status.status-ok .backup-btn-inline {
+      background: var(--ok);
+    }
+    .backup-status.status-danger .backup-btn-inline {
+      background: var(--danger);
+    }
   </style>
   
   
@@ -680,6 +830,23 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
   </script>
 </head>
 <body>
+  <!-- Backup Reminder Banner -->
+  <div id="backupBanner" style="display:none;">
+    <div class="backup-banner">
+      <div class="backup-banner-inner">
+        <div class="backup-banner-icon">⚠️</div>
+        <div class="backup-banner-text">
+          <strong id="backupBannerTitle">Backup Overdue</strong>
+          <span id="backupBannerMsg">Your data is stored in this browser only. Back up now to avoid losing your work.</span>
+        </div>
+        <div class="backup-banner-actions">
+          <button id="backupBannerBtn" class="backup-banner-cta">Back Up Now</button>
+          <button id="backupBannerDismiss" class="backup-banner-dismiss" title="Dismiss">✕</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="container">
     <section class="hero">
       <h1>Co-Marketing Portfolio Manager</h1>
@@ -863,7 +1030,7 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
             <input type="file" id="importJson" accept=".json" style="display:none;" />
           </label>
         </div>
-        <p id="autoBackupNote" style="margin-top:8px;font-size:0.78rem;color:var(--muted);font-style:italic;"></p>
+        <div id="autoBackupNote" class="backup-status status-ok"></div>
       </article>
     </section>
   </div>
@@ -1638,7 +1805,19 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
       });
     });
 
-    // === AUTO-BACKUP (weekly) ===
+    // === BACKUP SYSTEM (banner + inline status) ===
+    var BACKUP_WARN_DAYS = 7;   // show amber warning after 7 days
+    var BACKUP_DANGER_DAYS = 14; // escalate to red after 14 days
+
+    function getBackupInfo() {
+      var lastBackup = localStorage.getItem('comarketing_last_backup');
+      var now = new Date();
+      if (!lastBackup) return { lastBackup: null, daysSince: Infinity, neverBacked: true };
+      var last = new Date(lastBackup);
+      var daysSince = Math.floor((now - last) / (1000 * 60 * 60 * 24));
+      return { lastBackup: last, daysSince: daysSince, neverBacked: false };
+    }
+
     function downloadBackup() {
       var data = { generatedAt: new Date().toISOString(), merchants: merchants, campaigns: campaigns };
       var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -1648,35 +1827,84 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
       a.click();
       URL.revokeObjectURL(a.href);
       localStorage.setItem('comarketing_last_backup', new Date().toISOString());
-      updateBackupNote();
+      updateBackupUI();
     }
 
-    function checkAutoBackup() {
-      var lastBackup = localStorage.getItem('comarketing_last_backup');
-      var now = new Date();
-      if (!lastBackup) {
-        // First time — do a backup now
-        downloadBackup();
+    function showBackupBanner() {
+      var info = getBackupInfo();
+      var banner = document.getElementById('backupBanner');
+      var bannerDiv = banner.querySelector('.backup-banner');
+      var title = document.getElementById('backupBannerTitle');
+      var msg = document.getElementById('backupBannerMsg');
+
+      // Don't show if dismissed this session (unless backup is now current)
+      if (sessionStorage.getItem('comarketing_banner_dismissed') && !info.neverBacked && info.daysSince < BACKUP_DANGER_DAYS) {
+        banner.style.display = 'none';
         return;
       }
-      var last = new Date(lastBackup);
-      var daysSince = Math.floor((now - last) / (1000 * 60 * 60 * 24));
-      if (daysSince >= 7) {
-        downloadBackup();
+
+      if (info.neverBacked) {
+        banner.style.display = 'block';
+        bannerDiv.classList.add('danger-mode');
+        title.textContent = '🔴 No Backup Found';
+        msg.textContent = 'Your data lives only in this browser. Create your first backup now to protect ' + merchants.length + ' merchants and ' + campaigns.length + ' campaigns.';
+      } else if (info.daysSince >= BACKUP_DANGER_DAYS) {
+        banner.style.display = 'block';
+        bannerDiv.classList.add('danger-mode');
+        title.textContent = '🔴 Backup Critically Overdue — ' + info.daysSince + ' days ago';
+        msg.textContent = 'Your last backup was ' + fmtDate(info.lastBackup.toISOString().slice(0, 10)) + '. Data is at risk if you clear your browser. Back up immediately.';
+      } else if (info.daysSince >= BACKUP_WARN_DAYS) {
+        banner.style.display = 'block';
+        bannerDiv.classList.remove('danger-mode');
+        title.textContent = '⚠️ Backup Overdue — ' + info.daysSince + ' days since last backup';
+        msg.textContent = 'Last backed up ' + fmtDate(info.lastBackup.toISOString().slice(0, 10)) + '. We recommend weekly backups to keep your data safe.';
+      } else {
+        banner.style.display = 'none';
       }
     }
 
     function updateBackupNote() {
       var el = document.getElementById('autoBackupNote');
       if (!el) return;
-      var lastBackup = localStorage.getItem('comarketing_last_backup');
-      if (lastBackup) {
-        var d = new Date(lastBackup);
-        el.textContent = 'Last auto-backup: ' + fmtDate(d.toISOString().slice(0, 10)) + ' · Auto-saves every 7 days';
+      var info = getBackupInfo();
+
+      if (info.neverBacked) {
+        el.className = 'backup-status status-danger';
+        el.innerHTML = '<span class="status-icon">🔴</span>' +
+          '<span class="status-text"><strong>No backup on file.</strong> Your data exists only in this browser — back up now!</span>' +
+          '<button class="backup-btn-inline" onclick="downloadBackup()">Back Up Now</button>';
+      } else if (info.daysSince >= BACKUP_DANGER_DAYS) {
+        el.className = 'backup-status status-danger';
+        el.innerHTML = '<span class="status-icon">🔴</span>' +
+          '<span class="status-text"><strong>Backup critically overdue!</strong> Last backup: ' + fmtDate(info.lastBackup.toISOString().slice(0, 10)) + ' (' + info.daysSince + ' days ago)</span>' +
+          '<button class="backup-btn-inline" onclick="downloadBackup()">Back Up Now</button>';
+      } else if (info.daysSince >= BACKUP_WARN_DAYS) {
+        el.className = 'backup-status status-warn';
+        el.innerHTML = '<span class="status-icon">⚠️</span>' +
+          '<span class="status-text"><strong>Backup overdue.</strong> Last backup: ' + fmtDate(info.lastBackup.toISOString().slice(0, 10)) + ' (' + info.daysSince + ' days ago)</span>' +
+          '<button class="backup-btn-inline" onclick="downloadBackup()">Back Up Now</button>';
       } else {
-        el.textContent = 'No backup yet — one will be created automatically.';
+        el.className = 'backup-status status-ok';
+        el.innerHTML = '<span class="status-icon">✅</span>' +
+          '<span class="status-text">Last backup: ' + fmtDate(info.lastBackup.toISOString().slice(0, 10)) + ' (' + (info.daysSince === 0 ? 'today' : info.daysSince + ' day' + (info.daysSince !== 1 ? 's' : '') + ' ago') + ') · Next reminder in ' + (BACKUP_WARN_DAYS - info.daysSince) + ' days</span>' +
+          '<button class="backup-btn-inline" onclick="downloadBackup()">Download Backup</button>';
       }
     }
+
+    function updateBackupUI() {
+      showBackupBanner();
+      updateBackupNote();
+    }
+
+    // Banner button handlers
+    document.getElementById('backupBannerBtn').addEventListener('click', function() {
+      downloadBackup();
+    });
+    document.getElementById('backupBannerDismiss').addEventListener('click', function() {
+      document.getElementById('backupBanner').style.display = 'none';
+      // Store dismissal so it doesn't reappear until next page load
+      sessionStorage.setItem('comarketing_banner_dismissed', 'true');
+    });
 
     // === IMPORT FROM BACKUP ===
     document.getElementById('importJson').addEventListener('change', function(e) {
@@ -1704,10 +1932,8 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
       e.target.value = '';
     });
 
-    // Run auto-backup check and show status
-    updateBackupNote();
-    checkAutoBackup();
-
+    // Initialize backup UI and render dashboard
+    updateBackupUI();
     render();
   </script>
 </body>
