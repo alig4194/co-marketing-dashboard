@@ -645,6 +645,8 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
           <input id="mSpent" type="number" min="0" step="0.01" placeholder="Actual Spend" />
           <input id="mStart" type="date" required />
           <input id="mEnd" type="date" required />
+          <input id="mContractLink" placeholder="Contract Link (optional)" />
+          <input id="mPO" placeholder="PO # (optional)" />
           <textarea class="full" id="mTerms" placeholder="Terms & Conditions"></textarea>
           <textarea class="full" id="mUnlock" placeholder="Unlock thresholds (e.g., Spend $50k unlock $10k tranche)"></textarea>
           <button type="submit" class="full">Add Merchant</button>
@@ -656,6 +658,11 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
         <form id="campaignForm">
           <input id="cMerchant" placeholder="Merchant Name (must match merchant list)" required />
           <input id="cName" placeholder="Campaign Name" required />
+          <select id="cProduct" required>
+            <option value="">Product</option>
+            <option>Cash App Pay</option>
+            <option>Afterpay</option>
+          </select>
           <select id="cType" required>
             <option value="">Campaign Type</option>
             <option>Email</option>
@@ -675,10 +682,6 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
           <input id="cEnd" type="date" placeholder="End Date (optional)" />
           <input id="cPlanned" type="number" min="0" step="0.01" placeholder="Planned Spend" required />
           <input id="cActual" type="number" min="0" step="0.01" placeholder="Actual Spend (optional)" />
-          <input id="cImpr" type="number" min="0" step="1" placeholder="Impressions (optional)" />
-          <input id="cClicks" type="number" min="0" step="1" placeholder="Clicks (optional)" />
-          <input id="cTxn" type="number" min="0" step="1" placeholder="Transactions (optional)" />
-          <input id="cUsers" type="number" min="0" step="1" placeholder="New Users (optional)" />
           <input id="cGmv" type="number" min="0" step="0.01" placeholder="GMV (optional)" />
           <input id="cSlack" placeholder="Slack thread link (optional)" />
           <button type="submit" class="full">Add Campaign</button>
@@ -717,13 +720,13 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
               <tr>
                 <th>Campaign</th>
                 <th>Merchant</th>
+                <th>Product</th>
                 <th>Status</th>
                 <th>Planned Spend</th>
                 <th>Actual Spend</th>
                 <th>Variance</th>
                 <th>Start</th>
                 <th>End</th>
-                <th>ROI</th>
                 <th>Slack</th>
                 <th>Actions</th>
               </tr>
@@ -785,6 +788,8 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
         <input id="editSpent" type="number" min="0" step="0.01" placeholder="Actual Spend" />
         <input id="editStart" type="date" required />
         <input id="editEnd" type="date" required />
+        <input id="editContractLink" placeholder="Contract Link (optional)" />
+        <input id="editPO" placeholder="PO # (optional)" />
         <textarea class="full" id="editTerms" placeholder="Terms & Conditions"></textarea>
         <textarea class="full" id="editUnlock" placeholder="Unlock thresholds (e.g., Spend $50k unlock $10k tranche)"></textarea>
         <div class="modal-actions">
@@ -803,6 +808,11 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
         <input type="hidden" id="ecId" />
         <input id="ecMerchant" placeholder="Merchant Name" required />
         <input id="ecName" placeholder="Campaign Name" required />
+        <select id="ecProduct" required>
+          <option value="">Product</option>
+          <option>Cash App Pay</option>
+          <option>Afterpay</option>
+        </select>
         <select id="ecType" required>
           <option value="">Campaign Type</option>
           <option>Email</option>
@@ -822,10 +832,6 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
         <input id="ecEnd" type="date" />
         <input id="ecPlanned" type="number" min="0" step="0.01" placeholder="Planned Spend" required />
         <input id="ecActual" type="number" min="0" step="0.01" placeholder="Actual Spend" />
-        <input id="ecImpr" type="number" min="0" step="1" placeholder="Impressions" />
-        <input id="ecClicks" type="number" min="0" step="1" placeholder="Clicks" />
-        <input id="ecTxn" type="number" min="0" step="1" placeholder="Transactions" />
-        <input id="ecUsers" type="number" min="0" step="1" placeholder="New Users" />
         <input id="ecGmv" type="number" min="0" step="0.01" placeholder="GMV" />
         <input id="ecSlack" placeholder="Slack thread link" />
         <div class="modal-actions">
@@ -887,6 +893,8 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
         spent: Number(document.getElementById("mSpent").value) || 0,
         start: document.getElementById("mStart").value,
         end: document.getElementById("mEnd").value,
+        contractLink: document.getElementById("mContractLink").value.trim(),
+        po: document.getElementById("mPO").value.trim(),
         terms: document.getElementById("mTerms").value.trim(),
         unlock: document.getElementById("mUnlock").value.trim()
       };
@@ -901,16 +909,13 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
         id: crypto.randomUUID(),
         merchant: document.getElementById("cMerchant").value.trim(),
         name: document.getElementById("cName").value.trim(),
+        product: document.getElementById("cProduct").value,
         type: document.getElementById("cType").value,
         status: document.getElementById("cStatus").value,
         start: document.getElementById("cStart").value,
         end: document.getElementById("cEnd").value,
         planned: Number(document.getElementById("cPlanned").value) || 0,
         actual: Number(document.getElementById("cActual").value) || 0,
-        impressions: Number(document.getElementById("cImpr").value) || 0,
-        clicks: Number(document.getElementById("cClicks").value) || 0,
-        transactions: Number(document.getElementById("cTxn").value) || 0,
-        users: Number(document.getElementById("cUsers").value) || 0,
         gmv: Number(document.getElementById("cGmv").value) || 0,
         slack: document.getElementById("cSlack").value.trim()
       };
@@ -1141,13 +1146,13 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
         tr.innerHTML =
           '<td><strong>' + escapeHtml(c.name) + '</strong><br><span class="label">' + escapeHtml(c.type) + '</span></td>' +
           '<td>' + escapeHtml(c.merchant) + '</td>' +
+          '<td>' + escapeHtml(c.product || '') + '</td>' +
           '<td>' + escapeHtml(c.status) + '</td>' +
           '<td>' + fmtMoney(c.planned) + '</td>' +
           '<td>' + fmtMoney(c.actual) + '</td>' +
           '<td class="' + varianceClass + '">' + varianceLabel + '</td>' +
           '<td>' + fmtDate(c.start) + '</td>' +
           '<td>' + fmtDate(c.end) + '</td>' +
-          '<td class="' + (cm.roi < 0 ? 'risk' : 'ok') + '">' + pct(cm.roi) + '</td>' +
           '<td>' + (c.slack ? '<a href="' + escapeHtml(c.slack) + '" target="_blank" rel="noopener">Link</a>' : '<span class="risk">Missing</span>') + '</td>' +
           '<td><button class="btn-sm btn-edit" onclick="editCampaign(\'' + c.id + '\')">Edit</button> <button class="btn-sm btn-delete" onclick="deleteCampaign(\'' + c.id + '\')">Delete</button></td>';
         cBody.appendChild(tr);
@@ -1202,6 +1207,8 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
       document.getElementById('editSpent').value = m.spent || 0;
       document.getElementById('editStart').value = m.start;
       document.getElementById('editEnd').value = m.end;
+      document.getElementById('editContractLink').value = m.contractLink || '';
+      document.getElementById('editPO').value = m.po || '';
       document.getElementById('editTerms').value = m.terms;
       document.getElementById('editUnlock').value = m.unlock;
       document.getElementById('editModal').classList.add('active');
@@ -1230,6 +1237,8 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
       merchants[idx].spent = Number(document.getElementById('editSpent').value) || 0;
       merchants[idx].start = document.getElementById('editStart').value;
       merchants[idx].end = document.getElementById('editEnd').value;
+      merchants[idx].contractLink = document.getElementById('editContractLink').value.trim();
+      merchants[idx].po = document.getElementById('editPO').value.trim();
       merchants[idx].terms = document.getElementById('editTerms').value.trim();
       merchants[idx].unlock = document.getElementById('editUnlock').value.trim();
       document.getElementById('editModal').classList.remove('active');
@@ -1250,16 +1259,13 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
       document.getElementById('ecId').value = c.id;
       document.getElementById('ecMerchant').value = c.merchant;
       document.getElementById('ecName').value = c.name;
+      document.getElementById('ecProduct').value = c.product || '';
       document.getElementById('ecType').value = c.type;
       document.getElementById('ecStatus').value = c.status;
       document.getElementById('ecStart').value = c.start;
       document.getElementById('ecEnd').value = c.end || '';
       document.getElementById('ecPlanned').value = c.planned || 0;
       document.getElementById('ecActual').value = c.actual || 0;
-      document.getElementById('ecImpr').value = c.impressions || '';
-      document.getElementById('ecClicks').value = c.clicks || '';
-      document.getElementById('ecTxn').value = c.transactions || '';
-      document.getElementById('ecUsers').value = c.users || '';
       document.getElementById('ecGmv').value = c.gmv || '';
       document.getElementById('ecSlack').value = c.slack || '';
       document.getElementById('editCampaignModal').classList.add('active');
@@ -1281,16 +1287,13 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
       if (idx === -1) return;
       campaigns[idx].merchant = document.getElementById('ecMerchant').value.trim();
       campaigns[idx].name = document.getElementById('ecName').value.trim();
+      campaigns[idx].product = document.getElementById('ecProduct').value;
       campaigns[idx].type = document.getElementById('ecType').value;
       campaigns[idx].status = document.getElementById('ecStatus').value;
       campaigns[idx].start = document.getElementById('ecStart').value;
       campaigns[idx].end = document.getElementById('ecEnd').value;
       campaigns[idx].planned = Number(document.getElementById('ecPlanned').value) || 0;
       campaigns[idx].actual = Number(document.getElementById('ecActual').value) || 0;
-      campaigns[idx].impressions = Number(document.getElementById('ecImpr').value) || 0;
-      campaigns[idx].clicks = Number(document.getElementById('ecClicks').value) || 0;
-      campaigns[idx].transactions = Number(document.getElementById('ecTxn').value) || 0;
-      campaigns[idx].users = Number(document.getElementById('ecUsers').value) || 0;
       campaigns[idx].gmv = Number(document.getElementById('ecGmv').value) || 0;
       campaigns[idx].slack = document.getElementById('ecSlack').value.trim();
       document.getElementById('editCampaignModal').classList.remove('active');
