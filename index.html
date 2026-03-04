@@ -872,9 +872,9 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
 
     const daysUntil = d => Math.ceil((new Date(d) - new Date()) / (1000 * 60 * 60 * 24));
 
-    // Helper: get campaign rollups for a merchant
-    function getCampaignRollup(merchantName) {
-      var mc = campaigns.filter(function(c) { return c.merchant === merchantName; });
+    // Helper: get campaign rollups for a merchant by name AND product
+    function getCampaignRollup(merchantName, product) {
+      var mc = campaigns.filter(function(c) { return c.merchant === merchantName && c.product === product; });
       var totalPlanned = mc.reduce(function(s, c) { return s + (c.planned || 0); }, 0);
       var totalActual = mc.reduce(function(s, c) { return s + (c.actual || 0); }, 0);
       return { campaignPlanned: totalPlanned, campaignActual: totalActual, campaignCount: mc.length };
@@ -1104,7 +1104,7 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
       mBody.innerHTML = "";
       merchants.forEach(function(m) {
         var mm = merchantMetrics(m);
-        var rollup = getCampaignRollup(m.name);
+        var rollup = getCampaignRollup(m.name, m.product);
         var totalPlanned = (m.planned || 0) + rollup.campaignPlanned;
         var totalActual = (m.spent || 0) + rollup.campaignActual;
         var remaining = m.commitment - totalActual;
