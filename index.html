@@ -717,6 +717,7 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
           <input id="mEnd" type="date" required />
           <input id="mGpv" type="number" min="0" step="0.01" placeholder="Rolling 12-Month GPV (optional)" />
           <input id="mGpvTarget" type="number" min="0" step="0.01" placeholder="GPV Unlock Target (optional)" />
+          <input id="mGpvDate" type="date" placeholder="GPV Last Updated" />
           <input id="mContractLink" placeholder="Contract Link (optional)" />
           <input id="mPO" placeholder="PO # (optional)" />
           <textarea class="full" id="mTerms" placeholder="Terms & Conditions"></textarea>
@@ -888,6 +889,7 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
         <input id="editEnd" type="date" required />
         <input id="editGpv" type="number" min="0" step="0.01" placeholder="Rolling 12-Month GPV" />
         <input id="editGpvTarget" type="number" min="0" step="0.01" placeholder="GPV Unlock Target" />
+        <input id="editGpvDate" type="date" />
         <input id="editContractLink" placeholder="Contract Link (optional)" />
         <input id="editPO" placeholder="PO # (optional)" />
         <textarea class="full" id="editTerms" placeholder="Terms & Conditions"></textarea>
@@ -1084,6 +1086,7 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
         end: document.getElementById("mEnd").value,
         gpv: Number(document.getElementById("mGpv").value) || 0,
         gpvTarget: Number(document.getElementById("mGpvTarget").value) || 0,
+        gpvDate: document.getElementById("mGpvDate").value || '',
         contractLink: document.getElementById("mContractLink").value.trim(),
         po: document.getElementById("mPO").value.trim(),
         terms: document.getElementById("mTerms").value.trim(),
@@ -1217,11 +1220,13 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
         html += '<div class="pacing-stat"><div class="stat-label">Days Left</div><div class="stat-value">' + daysLeft + '</div></div>';
         html += '</div>';
 
-        // GPV Tracker (show if gpv or gpvTarget is set)
+        // GPV Tracker (only show for merchants with unlock tiers)
+        var hasUnlockTiers = m.unlock && /unlock|tranche|tier|threshold|GPV|gpv|milestone/i.test(m.unlock);
         var gpv = m.gpv || 0;
         var gpvTarget = m.gpvTarget || 0;
-        if (gpv > 0 || gpvTarget > 0) {
+        if (hasUnlockTiers && (gpv > 0 || gpvTarget > 0)) {
           var gpvPct = gpvTarget ? Math.min(100, (gpv / gpvTarget) * 100) : 0;
+          var gpvDateStr = m.gpvDate ? fmtDate(m.gpvDate) : '';
           html += '<div style="margin-bottom:8px;padding:8px 10px;background:rgba(0,214,50,0.06);border:1px dashed rgba(0,214,50,0.3);border-radius:8px;">';
           html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">';
           html += '<span style="font-size:0.82rem;font-weight:700;color:var(--ink);">Rolling 12-Month GPV</span>';
@@ -1232,6 +1237,7 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
             html += '<div class="pacing-bar-budget ' + (gpvPct >= 100 ? 'green' : (gpvPct >= 50 ? 'amber' : 'red')) + '" style="width:' + Math.min(100, gpvPct) + '%;height:100%;border-radius:5px;"></div>';
             html += '</div>';
           }
+          html += '<div style="font-size:0.72rem;color:var(--muted);margin-top:4px;font-style:italic;">Last updated: ' + (gpvDateStr || 'Not set — update via Edit') + '</div>';
           html += '</div>';
         }
 
@@ -1449,6 +1455,7 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
       document.getElementById('editEnd').value = m.end;
       document.getElementById('editGpv').value = m.gpv || 0;
       document.getElementById('editGpvTarget').value = m.gpvTarget || 0;
+      document.getElementById('editGpvDate').value = m.gpvDate || '';
       document.getElementById('editContractLink').value = m.contractLink || '';
       document.getElementById('editPO').value = m.po || '';
       document.getElementById('editTerms').value = m.terms;
@@ -1481,6 +1488,7 @@ A single-file enterprise dashboard for managing co-marketing commitments, campai
       merchants[idx].end = document.getElementById('editEnd').value;
       merchants[idx].gpv = Number(document.getElementById('editGpv').value) || 0;
       merchants[idx].gpvTarget = Number(document.getElementById('editGpvTarget').value) || 0;
+      merchants[idx].gpvDate = document.getElementById('editGpvDate').value || '';
       merchants[idx].contractLink = document.getElementById('editContractLink').value.trim();
       merchants[idx].po = document.getElementById('editPO').value.trim();
       merchants[idx].terms = document.getElementById('editTerms').value.trim();
